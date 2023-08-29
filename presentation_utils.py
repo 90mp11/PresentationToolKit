@@ -1,5 +1,6 @@
 from pptx import Presentation
 from pptx.util import Pt, Cm
+from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from datetime import date, datetime
 
@@ -63,6 +64,7 @@ def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
 
     text_box = rounded_rectangle.text_frame
     text_box.text = contents_text
+    text_box.vertical_anchor = MSO_ANCHOR.TOP
 
     first = 1
     for paragraph in text_box.paragraphs:

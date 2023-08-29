@@ -4,36 +4,36 @@ import presentation_utils as pu
 import constants as const
 
 # Define command-line arguments
-parser = argparse.ArgumentParser(description="Run different queries")
+parser = argparse.ArgumentParser(description="Project Reporting tool developed by the Passive Engineering Team. For specific help, please contact Matt Proctor")
 parser.add_argument( # --engineering
     "--engineering",
     action="store_true",
-    help="Create Batch of Presentations, one for each listed Team Member",
+    help="Create a batch of Presentations, one for each listed Team Member in the constants.py file",
 )
 parser.add_argument( # --impact
     "--impact",
     action="store_true",
-    help="Create Presentations for each Impacted Team",
+    help="Create individual presentations for each of the unique teams listed in the 'Impacted Teams' column",
 )
 parser.add_argument( # --allimpacted
     "--allimpacted",
     action="store_true",
-    help="Create One Presentation with sections for each Impacted Team",
+    help="Create single presentation to contain impacts against each of the unique teams listed in the 'Impacted Teams' column",
 )
 parser.add_argument( # --who
     "--who",
     action="store_true",
-    help="Load prompt to filter by an individual's data",
+    help="Creates a single presentation filtered based on user input to the 'Primary Owner' field - this works on incomplete names",
 )
 parser.add_argument( # --output
     "--output",
     action="store_true",
-    help="saves Dataframe as csv",
+    help="Used for debug - saves Dataframe as csv",
 )
 parser.add_argument( # --onhold
     "--onhold",
     action="store_true",
-    help="Exports only the on-hold projects for review",
+    help="Exports all the on-hold projects to a single presentation",
 )
 
 # Parse the command-line 
