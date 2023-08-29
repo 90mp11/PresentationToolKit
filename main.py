@@ -30,6 +30,11 @@ parser.add_argument( # --output
     action="store_true",
     help="saves Dataframe as csv",
 )
+parser.add_argument( # --onhold
+    "--onhold",
+    action="store_true",
+    help="Exports only the on-hold projects for review",
+)
 
 # Parse the command-line 
 args = parser.parse_args()
@@ -71,6 +76,11 @@ elif args.output:
     df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
     df.to_csv("./dataframe.csv")
     exit(1)
+elif args.onhold:
+    df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_OnHold_slides(df, prs, no_section=True)
+    pu.save_exit(prs, "_OnHold")
 else:
     df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
     prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -80,5 +90,6 @@ else:
     impacted = du.impacted_teams_list(df)
     for imp in impacted:
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
+    pu.create_OnHold_slides(df, prs)
     pu.save_exit(prs)
     exit(1)

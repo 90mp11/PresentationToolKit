@@ -8,6 +8,10 @@ def filter_dataframe_by_team(dataframe, team_name):
     filtered_df = dataframe[dataframe['Impacted Teams'].apply(lambda teams: team_name in teams)]
     return filtered_df
 
+def filter_dataframe_by_status(dataframe, status):
+    filtered_df = dataframe[dataframe['Status'].apply(lambda statuses: status in statuses)]
+    return filtered_df
+
 def impacted_teams_list(df):
         # Define a function to handle NaN values and split strings
     def process_teams(teams_str):

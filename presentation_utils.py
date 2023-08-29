@@ -31,8 +31,11 @@ def set_title(slide, title_text=""):
     title_shape = slide.shapes.title
     title_shape.text = title_text
 
-def create_project_button(slide, left, top, status, contents_text):
-    BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
+def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
+    if OVERRIDE == "":
+        BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
+    else:
+        BUTTON_DEF = OVERRIDE
 
     # Add a rounded rectangle shape
     rounded_rectangle = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
@@ -70,7 +73,7 @@ def create_project_button(slide, left, top, status, contents_text):
             run.font.size = Pt(12)
     first = 1
 
-def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""):
+def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
     # Function to take contents of df (dataframe) and output onto a 4 column grid using pre-sets from constants.py
     # Set grid parameters
     columns = 4  # Number of columns in the grid
@@ -80,8 +83,13 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Blank slide layout
     set_title(slide, title_text)
 
+    # Set up Constants
     SLIDE_DEF = const.FOUR_COL_SLIDE_CONSTANTS
-    BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
+
+    if BUTTON_OVERRIDE == "":
+        BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
+    else:
+        BUTTON_DEF = BUTTON_OVERRIDE
 
         # Iterate through each project and add a rounded rectangle
     for index, (_, project) in enumerate(df.iterrows()):
@@ -113,7 +121,22 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
             contents_text += f"{const.get_priority_text(project['Priority'])}"
 
-        create_project_button(slide, left, top, status, contents_text)
+        if type_flag == 'OnHold':
+            contents_text = f"{project['Title']}\n"
+            contents_text += f"Owner: {project['Primary Owner']}\n"
+            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
+            contents_text += f"Project Summary: {project['Project Summary']}"
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
+
+def create_OnHold_slides(df, prs, no_section=False):
+    if no_section == False:
+        create_title_slide(prs, f'On Hold Projects')
+    #Filter the dataframe to only the OnHold projects
+    on_hold = du.filter_dataframe_by_status(df, 'On Hold')
+    sorted = on_hold.sort_values(by=['Primary Owner'])
+    title_text = "On-Hold Projects - " + str(len(on_hold))
+    create_body_slide_four_cols(sorted, prs, type_flag='OnHold', title_text=title_text, BUTTON_OVERRIDE=const.ONHOLD_BUTTON_CONSTANTS)
 
 def create_ProjectOwner_slides(df, prs, filter=""):
     

@@ -1,3 +1,4 @@
 /_archive/*
 /output/*
 /raw/*
+/__pycache__/*

@@ -54,6 +54,12 @@ PROJECT_BUTTON_CONSTANTS = {
     'rectangle_height': Cm(2.8)
 }
 
+# Project Button Constants
+ONHOLD_BUTTON_CONSTANTS = {
+    'rectangle_width': Cm(7.8),
+    'rectangle_height': Cm(4.4)
+}
+
 FOUR_COL_SLIDE_CONSTANTS = {
     'start_left': Cm(0.65),
     'start_top': Cm(2),
