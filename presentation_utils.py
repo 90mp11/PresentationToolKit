@@ -3,6 +3,8 @@ from pptx.util import Pt, Cm
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from datetime import date, datetime
+import pandas as pd
+import math
 
 import constants as const 
 import data_utils as du
@@ -31,6 +33,14 @@ def set_title(slide, title_text=""):
     # Set slide title to Project Owner's name
     title_shape = slide.shapes.title
     title_shape.text = title_text
+
+def set_three_col_subtitle(slide):
+    subtitle = const.THREE_COL_TITLES
+    #hardcoded idx values that will be consistent for prs.slide_masters[1].slide_layouts[6] only
+    slide.placeholders[27].text = subtitle['col1']
+    slide.placeholders[29].text = subtitle['col2']
+    slide.placeholders[31].text = subtitle['col3']
+    return
 
 def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
     if OVERRIDE == "":
@@ -72,8 +82,96 @@ def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
             if first == 1:
                 run.font.bold = True
                 first = 0
-            run.font.size = Pt(12)
+            run.font.size = BUTTON_DEF['font_size']
     first = 1
+
+def row_calculator(index, type=1):
+    result = index / type
+    row = math.floor(result)
+    return row
+
+def populate_column(df, slide, BUTTON_FORMAT, SLIDE_FORMAT, COLUMN_FORMAT, type_flag='ProjectOwner', col=1):
+    for index, (_, project) in enumerate(df.iterrows()):
+        # Calculate current row and column
+        row = row_calculator(index, col)
+        
+        status = project['Status']
+
+        # Calculate position for the current rectangle
+        left = COLUMN_FORMAT['left']  
+
+        if 'right' in COLUMN_FORMAT:
+            right = COLUMN_FORMAT['right']
+        else:
+            right = left
+        
+        if not index % 2 == 0:
+            left = right
+
+        top = SLIDE_FORMAT['start_top'] + row * (BUTTON_FORMAT['rectangle_height'] + SLIDE_FORMAT['vertical_spacing'])
+
+        # Add project details to the rectangle (based on "type_flag" for specific contents)
+        if type_flag == 'ProjectOwner':
+            contents_text = f"{project['Title']}\n"
+            contents_text += f"Objective: {project['Objective']}\n"
+            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
+            contents_text += f"Priority: {const.get_priority_text(project['Priority'])}"
+
+        if type_flag == 'Objective':
+            contents_text = f"{project['Title']}\n"
+            contents_text += f"Owner: {project['Primary Owner']}\n"
+            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
+            contents_text += f"{const.get_priority_text(project['Priority'])}"
+
+        if type_flag == 'Impact':
+            contents_text = f"{project['Title']}\n"
+            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}"
+               
+        if type_flag == 'OnHold':
+            contents_text = f"{project['Title']}\n"
+            contents_text += f"Owner: {project['Primary Owner']}\n"
+            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
+            contents_text += "Project Summary: "
+            if not pd.isna(project['Project Summary']):
+                contents_text += f"{project['Project Summary']}"
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_FORMAT)
+
+def create_body_slide_three_cols(df_1, df_2, df_3, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
+    # Function to take contents of df (dataframe) and output onto a 3 column grid using pre-sets from constants.py
+    # Set grid parameters
+    columns = 3  # Number of columns in the grid
+
+    # Create a new slide
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[6])  # Blank slide layout
+    set_title(slide, title_text)
+    set_three_col_subtitle(slide)
+
+    # Set up Constants
+    SLIDE_DEF = const.THREE_COL_SLIDE_CONSTANTS
+
+    #Hardcoding in the Column1 Button Dimension - fix in future revision
+    COL1_BUTTON_DEF = const.THREE_COL_PROJECT_BUTTON_COL1_CONSTANTS
+
+    if BUTTON_OVERRIDE == "":
+        BUTTON_DEF = const.THREE_COL_PROJECT_BUTTON_CONSTANTS
+    else:
+        BUTTON_DEF = BUTTON_OVERRIDE
+
+    COLUMN_1 = {
+        'left': SLIDE_DEF['start_left_col1'],
+        'right': SLIDE_DEF['start_left_col2']
+    }
+    COLUMN_2 = {
+        'left': SLIDE_DEF['start_left_col3']
+    }
+    COLUMN_3 = {
+        'left': SLIDE_DEF['start_left_col4']
+    }
+        # Iterate through each project and add a rounded rectangle (COLUMN 1)
+    populate_column(df_1, slide, COL1_BUTTON_DEF, SLIDE_DEF, COLUMN_1, type_flag, col=2)
+    populate_column(df_2, slide, BUTTON_DEF, SLIDE_DEF, COLUMN_2, type_flag)
+    populate_column(df_3, slide, BUTTON_DEF, SLIDE_DEF, COLUMN_3, type_flag)
 
 def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
     # Function to take contents of df (dataframe) and output onto a 4 column grid using pre-sets from constants.py
@@ -85,7 +183,7 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
     set_title(slide, title_text)
 
     # Set up Constants
-    SLIDE_DEF = const.THREE_COL_SLIDE_CONSTANTS
+    SLIDE_DEF = const.FOUR_COL_SLIDE_CONSTANTS
 
     if BUTTON_OVERRIDE == "":
         BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
@@ -151,7 +249,7 @@ def create_ProjectOwner_slides(df, prs, filter=""):
                 continue  # Skip this owner if the filter doesn't match
 
         title_text = owner + " - " + str(len(projects))
-        sorted_projects = projects.sort_values(by=['Objective', 'Priority'])
+        sorted_projects = projects.sort_values(by=['Priority', 'Objective'])
         create_body_slide_four_cols(sorted_projects, prs, 'ProjectOwner', title_text)
 
 def create_Objective_slides(df, prs, filter=""):
@@ -177,10 +275,22 @@ def create_Impacted_section(df, prs, no_section=False, impacted_team='Training')
 
     # Filter projects by Impacted Team
     projects = du.filter_dataframe_by_team(df, impacted_team)
-
     sorted_projects = projects.sort_values(by=['Priority'])
+
     title_text = impacted_team  + " - " + str(len(projects))
-    create_body_slide_four_cols(sorted_projects, prs, 'Impact', title_text) 
+#    create_body_slide_four_cols(sorted_projects, prs, 'Impact', title_text)
+
+    df_triage = du.filter_dataframe_by_staging(projects, 'Triage')
+    df_analysis = du.filter_dataframe_by_staging(projects, 'Analysis')
+    df_alpha = du.filter_dataframe_by_staging(projects, 'Alpha Test')
+    df_beta = du.filter_dataframe_by_staging(projects, 'Beta Test')
+    df_rollout = du.filter_dataframe_by_staging(projects, 'Roll-out')
+
+    col1 = du.combine_dataframe(df_triage, df_analysis)
+    col2 = du.combine_dataframe(df_alpha, df_beta)
+    col3 = df_rollout
+
+    create_body_slide_three_cols(col1, col2, col3, prs, 'Impact', title_text)
 
 def create_Impacted_section_OLD(df, prs, no_section=False, impacted_team='Training'):
 ##NOT YET REFACTORED

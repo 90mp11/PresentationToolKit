@@ -12,6 +12,14 @@ def filter_dataframe_by_status(dataframe, status):
     filtered_df = dataframe[dataframe['Status'].apply(lambda statuses: status in statuses)]
     return filtered_df
 
+def filter_dataframe_by_staging(dataframe, staging):
+    filtered_df = dataframe[dataframe['Staging'].apply(lambda statuses: staging in statuses)]
+    return filtered_df
+
+def combine_dataframe(df1, df2):
+    combined_df = pd.concat([df1, df2], ignore_index=True)
+    return combined_df
+
 def impacted_teams_list(df):
         # Define a function to handle NaN values and split strings
     def process_teams(teams_str):

@@ -28,12 +28,17 @@ parser.add_argument( # --who
 parser.add_argument( # --output
     "--output",
     action="store_true",
-    help="Used for debug - saves Dataframe as csv",
+    help="Used for testing / debug",
 )
 parser.add_argument( # --onhold
     "--onhold",
     action="store_true",
     help="Exports all the on-hold projects to a single presentation",
+)
+parser.add_argument( # --objective
+    "--objective",
+    action="store_true",
+    help="Exports the Objective view into a single presentation",
 )
 
 # Parse the command-line 
@@ -73,8 +78,13 @@ elif args.allimpacted:
     pu.save_exit(prs, "_AllImpacts")
     exit(1)
 elif args.output:
+    print('debug')
+    exit(1)
+elif args.objective:
     df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
-    df.to_csv("./dataframe.csv")
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_Objective_slides(df, prs)
+    pu.save_exit(prs, "_Objective")
     exit(1)
 elif args.onhold:
     df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
