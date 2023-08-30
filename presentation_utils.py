@@ -79,14 +79,13 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
     # Function to take contents of df (dataframe) and output onto a 4 column grid using pre-sets from constants.py
     # Set grid parameters
     columns = 4  # Number of columns in the grid
-    rows = -(-len(df) // columns)  # Calculate the number of rows needed to fit all projects
 
     # Create a new slide
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Blank slide layout
     set_title(slide, title_text)
 
     # Set up Constants
-    SLIDE_DEF = const.FOUR_COL_SLIDE_CONSTANTS
+    SLIDE_DEF = const.THREE_COL_SLIDE_CONSTANTS
 
     if BUTTON_OVERRIDE == "":
         BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
