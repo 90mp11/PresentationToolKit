@@ -23,6 +23,12 @@ def save_exit(prs, modifier=""):
 
     prs.save(output_pptx)
 
+def placeholder_identifier(slide):
+    for shape in slide.shapes:
+        if shape.is_placeholder:
+            phf = shape.placeholder_format
+        print('%d, %s' % (phf.idx, phf.type))
+
 def create_title_slide(prs, title=""):
     section_slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[3])  # Blank slide layout
     # Set slide title to Objective
@@ -226,6 +232,11 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
             contents_text += f"Project Summary: {project['Project Summary']}"
 
+        if type_flag == 'Release Forecast':
+            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text += f"Title: {project['Title']}\n"
+            contents_text += f"Owner: {project['Primary Owner']}"
+
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
 
 def create_OnHold_slides(df, prs, no_section=False):
@@ -376,3 +387,60 @@ def create_Impacted_section_OLD(df, prs, no_section=False, impacted_team='Traini
                     first = 0
                 run.font.size = Pt(12)
         first = 1    
+
+def create_project_section(df, prs, no_section=False):
+    if no_section == False:
+        create_title_slide(prs, f'Project Details')
+    
+    #DF Filtering Logic goes here
+
+    for index, (_, project) in enumerate(df.iterrows()):
+        create_single_project_slide(project, prs)
+    return
+
+def create_single_project_slide(project, prs, title_text=""):
+
+    update = project['Project Updates']
+    if pd.isna(update):
+       update = " " 
+    else:
+        update = du.convert_html_to_text_with_newlines(update)
+
+    action = project['Project Actions']
+    if pd.isna(action):
+       action = " " 
+    else:
+        action = du.convert_html_to_text_with_newlines(action)
+
+    summary = project['Project Summary']
+    if pd.isna(summary):
+       summary = " " 
+
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7])  # Blank slide layout
+    
+    set_title(slide, project['Title'])
+
+    #Slide subtitle
+    slide.placeholders[10].text = f"Project Summary: {summary}"
+
+    #Column Subtitles
+    slide.placeholders[26].text = "Project Updates" #Left
+    slide.placeholders[28].text = "Project Actions" #Right
+
+    #Column Text
+    slide.placeholders[24].text = f"{update}" #Left
+    slide.placeholders[27].text = f"{action}" #Right
+
+    return
+
+def create_document_release_section(df, prs):
+    grouped = df.groupby(['Release Forecast'])
+    
+    for date, documents in grouped:
+        title_text = date + " - " + str(len(documents))
+        sorted_docs = documents.sort_values(by=['Doc Reference'])
+        create_body_slide_four_cols(sorted_docs, prs, 'Release Forecast', title_text)
+    return
+
+def create_document_release_slide(df, prs):
+    return
