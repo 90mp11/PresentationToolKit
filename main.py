@@ -40,6 +40,16 @@ parser.add_argument( # --objective
     action="store_true",
     help="Exports the Objective view into a single presentation",
 )
+parser.add_argument( # --projects
+    "--projects",
+    action="store_true",
+    help="Exports the Objective view into a single presentation",
+)
+parser.add_argument( # --docs
+    "--docs",
+    action="store_true",
+    help="Imports the Document Change Log and outputs the Monthly Release Board slides",
+)
 
 # Parse the command-line 
 args = parser.parse_args()
@@ -91,6 +101,18 @@ elif args.onhold:
     prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
     pu.create_OnHold_slides(df, prs, no_section=True)
     pu.save_exit(prs, "_OnHold")
+elif args.projects:
+    df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_project_section(df, prs)
+    pu.save_exit(prs, "_Projects")
+    exit(1)
+elif args.docs:
+    df = du.create_blank_dataframe(const.FILE_LOCATIONS['document_csv'])
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_document_release_section(df, prs)
+    pu.save_exit(prs, "_DocumentBoard")
+    exit(1)
 else:
     df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
     prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -100,6 +122,6 @@ else:
     impacted = du.impacted_teams_list(df)
     for imp in impacted:
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
-    pu.create_OnHold_slides(df, prs)
+    #pu.create_OnHold_slides(df, prs)
     pu.save_exit(prs)
     exit(1)

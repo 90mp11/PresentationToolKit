@@ -1,4 +1,6 @@
 import pandas as pd
+from bs4 import BeautifulSoup
+import html
 
 def create_blank_dataframe(csv_file='./raw/DATA.csv'):
     df = pd.read_csv(csv_file)
@@ -42,3 +44,44 @@ def impacted_teams_list(df):
     unique_teams_list = list(unique_teams)
 
     return (unique_teams_list)
+
+from bs4 import BeautifulSoup
+import html
+
+from bs4 import BeautifulSoup
+import html
+
+def convert_html_to_text_with_newlines(html_str):
+    """
+    Convert a given HTML string to plain text while preserving newlines and fixing encoding issues.
+    This version also ensures that each sentence or paragraph is on a new line.
+    
+    Parameters:
+    - html_str (str): The HTML string to convert.
+    
+    Returns:
+    - str: A plain text representation of the HTML string with newlines preserved.
+    """
+    # Use BeautifulSoup to parse the HTML
+    soup = BeautifulSoup(html_str, 'html.parser')
+    
+    # Initialize an empty string to store the final text
+    final_text = ""
+    
+    # Iterate over each element in the HTML
+    for elem in soup.stripped_strings:
+        # Add the text of the element to the final text
+        final_text += elem
+        # Add a newline if the text ends with a period or is contained within a <p> tag
+        if elem.endswith('.') or (hasattr(elem, 'parent') and elem.parent.name == 'p'):
+            final_text += '\n'
+    
+    # Unescape HTML entities
+    final_text = html.unescape(final_text)
+    
+    # Remove any unwanted characters (e.g., â€‹ can appear due to encoding issues)
+    final_text = final_text.replace("â€‹", "")
+    final_text = final_text.replace("&%23160;", "")
+    final_text = final_text.replace("&%2358;", ":")
+    
+    return final_text.strip()  # Strip removes leading/trailing white spaces
