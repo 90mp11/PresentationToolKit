@@ -104,7 +104,7 @@ THREE_COL_SLIDE_CONSTANTS = {
 
 DOC_RELEASE_SLIDE_CONSTANTS = {
     'start_left': Cm(0.65),
-    'start_top': Cm(4.56),
+    'start_top': Cm(3.87),
     'vertical_spacing': Cm(0.2),
     'horizontal_spacing': Cm(0.2),
 }
