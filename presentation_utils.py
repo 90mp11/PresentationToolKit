@@ -457,10 +457,16 @@ def create_document_release_section(df, prs, filter=''):
 
     for date, documents in grouped:
         title_text = 'Technical Releases'
-        sorted_docs = documents.sort_values(by=['Doc Reference'])
-        #TODO - filter the New and Updates into these function calls
-        create_document_release_slide(sorted_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'new')
-        create_document_release_slide(sorted_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'update')
+
+        # Filtering based on 'Doc Reference'
+        new_docs = documents[documents['Doc Reference'].str.endswith('NEW')]
+        update_docs = documents[~documents['Doc Reference'].str.endswith('NEW')]
+
+        sorted_new_docs = new_docs.sort_values(by=['Doc Reference'])
+        sorted_update_docs = update_docs.sort_values(by=['Doc Reference'])
+
+        create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'new')
+        create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'update')
     return
 
 def create_document_release_slide(df, prs, date='08/09/2023', title_text="", BUTTON_OVERRIDE="", type_flag='new'):
