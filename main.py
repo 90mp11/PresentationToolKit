@@ -65,7 +65,7 @@ def main():
             pu.save_exit(prs, "_"+eng)
         exit(1)
     elif args.who:
-        name_filter = input("Enter the custom workspace name: ")
+        name_filter = input("Name: ")
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         pu.create_ProjectOwner_slides(df, prs, name_filter)
@@ -89,7 +89,9 @@ def main():
         pu.save_exit(prs, "_AllImpacts")
         exit(1)
     elif args.output:
-        print('debug')
+        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7]) #Doc Release Board Template
+        pu.placeholder_identifier(slide)
         exit(1)
     elif args.objective:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])

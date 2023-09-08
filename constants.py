@@ -56,6 +56,16 @@ PROJECT_BUTTON_CONSTANTS = {
     'font_size': Pt(11)
 }
 
+# Document Button Constants
+DOCUMENT_BUTTON_CONSTANTS = {
+    'rectangle_width': Cm(15),
+    'rectangle_height': Cm(2.3),
+    'font_size': Pt(11),
+    'fill': ThemeColors.WHITE,
+    'font_colour': ThemeColors.BLACK,
+    'border': ThemeColors.PINK
+}
+
 # Project Button Constants
 ONHOLD_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(7.8),
@@ -92,10 +102,23 @@ THREE_COL_SLIDE_CONSTANTS = {
     'vertical_spacing': Cm(0.2)
 }
 
+DOC_RELEASE_SLIDE_CONSTANTS = {
+    'start_left': Cm(0.65),
+    'start_top': Cm(4.56),
+    'vertical_spacing': Cm(0.2),
+    'horizontal_spacing': Cm(0.2),
+}
+
 THREE_COL_TITLES = {
     'col1': 'Assessing:',
     'col2': 'Testing:',
     'col3': 'Preparing Release:'
+}
+
+DOC_BOARD_TITLES = {
+    'main': 'Technical Releases',
+    'new': 'New Documents',
+    'update': 'Updated Documents'
 }
 
 # Functions

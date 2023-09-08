@@ -48,7 +48,14 @@ def set_three_col_subtitle(slide):
     slide.placeholders[31].text = subtitle['col3']
     return
 
-def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
+def set_document_release_subtitle(slide, heading='new', date = '08/09/2023'):
+    subtitle = const.DOC_BOARD_TITLES
+    #hardcoded idx values that will be consistent for prs.slide_masters[1].slide_layouts[7] only
+    slide.placeholders[27].text = subtitle[heading]
+    slide.placeholders[28].text = date
+    return
+
+def create_project_button(slide, left, top, status="", contents_text="CONTENT", OVERRIDE=""):
     if OVERRIDE == "":
         BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
     else:
@@ -57,9 +64,15 @@ def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
     # Add a rounded rectangle shape
     rounded_rectangle = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
                                             left, top, BUTTON_DEF['rectangle_width'], BUTTON_DEF['rectangle_height'])
+    if status == "":
+        FILL_COLOUR = OVERRIDE.get('fill', const.ThemeColors.PINK)
+        FONT_COLOUR = OVERRIDE.get('font_colour', const.ThemeColors.WHITE)
+        BORDER_COLOUR = OVERRIDE.get('border', const.ThemeColors.PINK)
+    else:
+        FILL_COLOUR = const.STATUS_COLOUR.get(status, const.ThemeColors.PINK)
+        BORDER_COLOUR = FILL_COLOUR
+        FONT_COLOUR = 0
 
-    FILL_COLOUR = const.STATUS_COLOUR.get(status, const.ThemeColors.PINK)
-    
     # Customize the rectangle Fill
     fill = rounded_rectangle.fill
     fill.solid()
@@ -67,7 +80,7 @@ def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
 
     # Customize the rectangle line
     line = rounded_rectangle.line
-    line.color.theme_color = FILL_COLOUR      
+    line.color.theme_color = BORDER_COLOUR      
     line.color.brightness = -0.50 
 
     # Remove all Shadows
@@ -85,6 +98,8 @@ def create_project_button(slide, left, top, status, contents_text, OVERRIDE=""):
     first = 1
     for paragraph in text_box.paragraphs:
         for run in paragraph.runs:
+            if FONT_COLOUR != 0:
+                run.font.color.theme_color = FONT_COLOUR
             if first == 1:
                 run.font.bold = True
                 first = 0
@@ -433,14 +448,61 @@ def create_single_project_slide(project, prs, title_text=""):
 
     return
 
-def create_document_release_section(df, prs):
-    grouped = df.groupby(['Release Forecast'])
+def create_document_release_section(df, prs, filter=''):
     
+    if filter:
+        df = df.loc[df['Release Forecast'] == filter]
+
+    grouped = df.groupby('Release Forecast')
+
     for date, documents in grouped:
-        title_text = date + " - " + str(len(documents))
+        title_text = 'Technical Releases'
         sorted_docs = documents.sort_values(by=['Doc Reference'])
-        create_body_slide_four_cols(sorted_docs, prs, 'Release Forecast', title_text)
+        #TODO - filter the New and Updates into these function calls
+        create_document_release_slide(sorted_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'new')
+        create_document_release_slide(sorted_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'update')
     return
 
-def create_document_release_slide(df, prs):
+def create_document_release_slide(df, prs, date='08/09/2023', title_text="", BUTTON_OVERRIDE="", type_flag='new'):
+    # Function to take contents of df (dataframe) and output onto a 2 column grid using pre-sets from constants.py for the Document Release Board
+
+    columns = 2
+
+    # Create a new slide
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7])  # Blank slide layout
+    set_title(slide, title_text)
+    set_document_release_subtitle(slide, type_flag, date)
+
+    # Set up Constants
+    SLIDE_DEF = const.DOC_RELEASE_SLIDE_CONSTANTS
+
+    if BUTTON_OVERRIDE == "":
+        BUTTON_DEF = const.DOCUMENT_BUTTON_CONSTANTS
+    else:
+        BUTTON_DEF = BUTTON_OVERRIDE
+
+        # Iterate through each project and add a rounded rectangle
+    for index, (_, project) in enumerate(df.iterrows()):
+        # Calculate current row and column
+        row = index // columns
+        column = index % columns
+        status = ""
+
+        # Calculate position for the current rectangle
+        left = SLIDE_DEF['start_left'] + column * (BUTTON_DEF['rectangle_width'] + SLIDE_DEF['horizontal_spacing'])
+        top = SLIDE_DEF['start_top'] + row * (BUTTON_DEF['rectangle_height'] + SLIDE_DEF['vertical_spacing'])
+
+        # Add project details to the rectangle (based on "type_flag" for specific contents)
+        if type_flag == 'new':
+            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text += f"Title: {project['Title']}\n"
+            contents_text += f"Changes: "
+
+        if type_flag == 'update':
+            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text += f"Title: {project['Title']}\n"
+            contents_text += f"Changes: "
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
+
     return
