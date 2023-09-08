@@ -111,9 +111,10 @@ def main():
         pu.save_exit(prs, "_Projects")
         exit(1)
     elif args.docs:
+        name_filter = input("Date: ")
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['document_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
-        pu.create_document_release_section(df, prs)
+        pu.create_document_release_section(df, prs, name_filter)
         pu.save_exit(prs, "_DocumentBoard")
         exit(1)
     else:
