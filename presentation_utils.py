@@ -453,7 +453,7 @@ def create_document_release_section(df, prs, filter=''):
     if filter:
         df = df.loc[df['Release Forecast'] == filter]
 
-    grouped = df.groupby('Release Forecast')
+    grouped = df.groupby(df['Release Forecast'].fillna('None'))
 
     for date, documents in grouped:
         title_text = 'Technical Releases'
