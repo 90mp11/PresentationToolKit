@@ -9,7 +9,7 @@ import math
 from . import constants as const 
 from . import data_utils as du
 
-def create_blank_presentation(template='./template/_template.pptx'):
+def create_blank_presentation(template='./templates/_template.pptx'):
     prs = Presentation(template)
     return prs
 
