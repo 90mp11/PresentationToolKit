@@ -62,7 +62,7 @@ def main():
             df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
             pu.create_ProjectOwner_slides(df, prs, eng)
             pu.create_Objective_slides(df, prs, eng)
-            pu.save_exit(prs, "_"+eng)
+            pu.save_exit(prs, "_"+eng, const.FILE_LOCATIONS['output_folder'])
         exit(1)
     elif args.who:
         name_filter = input("Name: ")
@@ -70,7 +70,7 @@ def main():
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         pu.create_ProjectOwner_slides(df, prs, name_filter)
         pu.create_Objective_slides(df, prs, name_filter)
-        pu.save_exit(prs, "_"+name_filter)
+        pu.save_exit(prs, "_"+name_filter, const.FILE_LOCATIONS['output_folder'])
         exit(1)
     elif args.impact:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
@@ -78,7 +78,7 @@ def main():
         for imp in impacted:
             prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
             pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
-            pu.save_exit(prs, "_"+imp)
+            pu.save_exit(prs, "_"+imp, const.FILE_LOCATIONS['output_folder'])
         exit(1)
     elif args.allimpacted:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
@@ -86,7 +86,7 @@ def main():
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         for imp in impacted:
             pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
-        pu.save_exit(prs, "_AllImpacts")
+        pu.save_exit(prs, "_AllImpacts", const.FILE_LOCATIONS['output_folder'])
         exit(1)
     elif args.output:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -97,25 +97,25 @@ def main():
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_Objective_slides(df, prs)
-        pu.save_exit(prs, "_Objective")
+        pu.save_exit(prs, "_Objective", const.FILE_LOCATIONS['output_folder'])
         exit(1)
     elif args.onhold:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_OnHold_slides(df, prs, no_section=True)
-        pu.save_exit(prs, "_OnHold")
+        pu.save_exit(prs, "_OnHold", const.FILE_LOCATIONS['output_folder'])
     elif args.projects:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_project_section(df, prs)
-        pu.save_exit(prs, "_Projects")
+        pu.save_exit(prs, "_Projects", const.FILE_LOCATIONS['output_folder'])
         exit(1)
     elif args.docs:
         name_filter = input("Date: ")
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['document_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_document_release_section(df, prs, name_filter)
-        pu.save_exit(prs, "_DocumentBoard")
+        pu.save_exit(prs, "_DocumentBoard", const.FILE_LOCATIONS['output_folder'])
         exit(1)
     else:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
@@ -127,8 +127,45 @@ def main():
         for imp in impacted:
             pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
         #pu.create_OnHold_slides(df, prs)
-        pu.save_exit(prs)
+        pu.save_exit(prs, folder=const.FILE_LOCATIONS['output_folder'])
         exit(1)
+
+def person_filter(project_csv, output_folder, person):
+    df = du.create_blank_dataframe(project_csv)
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_ProjectOwner_slides(df, prs, person)
+    pu.create_Objective_slides(df, prs, person)
+    output_path = pu.save_exit(prs, "_"+person, output_folder)
+    return output_path
+
+def allimpacted(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
+    impacted = du.impacted_teams_list(df)
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    for imp in impacted:
+        pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
+    output_path = pu.save_exit(prs, "_AllImpacts", output_folder)
+    return output_path
+
+def objective(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_Objective_slides(df, prs)
+    output_path = pu.save_exit(prs, "_Objective", output_folder)
+    return output_path
+
+def output_all(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_ProjectOwner_slides(df, prs)
+    pu.create_Objective_slides(df, prs)
+    pu.create_title_slide(prs, "Impacted Teams")
+    impacted = du.impacted_teams_list(df)
+    for imp in impacted:
+        pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
+    output_path = pu.save_exit(prs, folder = output_folder)
+    return output_path
 
 if __name__ == "__main__":
     main()
+

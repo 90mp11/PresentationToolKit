@@ -28,6 +28,7 @@ FILE_LOCATIONS = {
     'contact_csv': './raw/CONTACT.csv',
     'concession_csv': './raw/CONCESSION.csv',
     'pptx_template': './template/_template.pptx',
+    'output_folder': './output/',
 }
     
 # Text Representations for Staging

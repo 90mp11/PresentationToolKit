@@ -13,15 +13,17 @@ def create_blank_presentation(template='./template/_template.pptx'):
     prs = Presentation(template)
     return prs
 
-def save_exit(prs, modifier=""):
+def save_exit(prs, modifier="", folder=""):
     # Save the PowerPoint presentation
     today = date.today()
     current_time = datetime.now().strftime("%H%M")  # Get current hour and minute
-    output_pptx = f'./output/PEA_Project_Report_{today.strftime("%y%m%d")}_{current_time}'
+    output_pptx = f'PEA_Project_Report_{today.strftime("%y%m%d")}_{current_time}'
     output_pptx += modifier
     output_pptx += ".pptx"
 
-    prs.save(output_pptx)
+    save_to_location = folder + output_pptx
+    prs.save(save_to_location)
+    return output_pptx
 
 def placeholder_identifier(slide):
     for shape in slide.shapes:
@@ -283,7 +285,8 @@ def create_Objective_slides(df, prs, filter=""):
     create_title_slide(prs, 'By Objective')
 
     if not filter == "":
-        df.query("`Primary Owner` == @filter", inplace=True)
+        df = df[df['Primary Owner'].str.contains(filter, case=False, na=False)]
+
 
     # Group projects by Objective
     grouped = df.groupby('Objective')
