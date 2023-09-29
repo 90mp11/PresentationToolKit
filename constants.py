@@ -28,7 +28,7 @@ FILE_LOCATIONS = {
     'document_csv': './raw/DOC.csv',
     'contact_csv': './raw/CONTACT.csv',
     'concession_csv': './raw/CONCESSION.csv',
-    'pptx_template': './template/_template.pptx',
+    'pptx_template': './templates/_template.pptx',
     'output_folder': './output/',
 }
     
