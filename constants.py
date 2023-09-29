@@ -2,6 +2,7 @@ from pptx.util import Pt, Cm
 from pptx.enum.dml import MSO_THEME_COLOR
 
 ENGINEERS = ['Andy Oxford', 'Chris Kelly', 'Luke Phillips', 'Matthew Harbord', 'Neil Griffin']
+RTL = ['Irina Gonik', 'Peter Little', 'Dino Bevilacqua']
 
 # Theme Colors
 class ThemeColors:
