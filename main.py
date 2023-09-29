@@ -1,7 +1,7 @@
 import argparse
-import data_utils as du
-import presentation_utils as pu
-import constants as const
+from . import data_utils as du
+from . import presentation_utils as pu
+from . import constants as const
 
 def main():
     # Define command-line arguments
