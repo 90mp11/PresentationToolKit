@@ -139,6 +139,8 @@ def populate_column(df, slide, BUTTON_FORMAT, SLIDE_FORMAT, COLUMN_FORMAT, type_
             contents_text += f"Objective: {project['Objective']}\n"
             contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
             contents_text += f"Priority: {const.get_priority_text(project['Priority'])}"
+            if project['Status'] == 'Blocked':
+                contents_text += f"\nBlocked: {project['Closure Comments']}"
 
         if type_flag == 'Objective':
             contents_text = f"{project['Title']}\n"
@@ -230,6 +232,8 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text += f"Objective: {project['Objective']}\n"
             contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
             contents_text += f"Priority: {const.get_priority_text(project['Priority'])}"
+            if project['Status'] == 'Blocked':
+                contents_text += f"\nBlocked: {project['Closure Comments']}"
 
         if type_flag == 'Objective':
             contents_text = f"{project['Title']}\n"
