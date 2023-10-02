@@ -6,8 +6,8 @@ from datetime import date, datetime
 import pandas as pd
 import math
 
-import utilities.constants as const 
-import utilities.data_utils as du
+import PresentationToolKit.utilities.constants as const 
+import PresentationToolKit.utilities.data_utils as du
 
 def create_blank_presentation(template='./templates/_template.pptx'):
     prs = Presentation(template)
