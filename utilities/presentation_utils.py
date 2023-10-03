@@ -25,142 +25,264 @@ def save_exit(prs, modifier="", folder=""):
     prs.save(save_to_location)
     return output_pptx
 
-def placeholder_identifier(slide):
-    for shape in slide.shapes:
-        if shape.is_placeholder:
-            phf = shape.placeholder_format
-        print('%d, %s' % (phf.idx, phf.type))
-
 def create_title_slide(prs, title=""):
-    section_slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[3])  # Blank slide layout
-    # Set slide title to Objective
-    title_shape = section_slide.shapes.title
-    title_shape.text = f'{title}'
+    """
+    Create a title slide and add it to the given presentation.
 
-def set_title(slide, title_text=""):
-    # Set slide title to Project Owner's name
+    Args:
+    prs (Presentation): The presentation object to which the slide will be added.
+    title (str, optional): The title to set for the slide. Defaults to an empty string.
+
+    Returns:
+    Slide: The created title slide.
+    """
+    SLIDE_MASTER_INDEX = 1
+    BLANK_SLIDE_LAYOUT_INDEX = 3
+
+    # Add a new slide with the specified layout
+    section_slide = prs.slides.add_slide(prs.slide_masters[SLIDE_MASTER_INDEX].slide_layouts[BLANK_SLIDE_LAYOUT_INDEX])
+    
+    #Populate Title Placeholder on slide
+    set_slide_title(section_slide, title)
+        
+    return section_slide
+
+def set_slide_title(slide, title_text=""):
+    """
+    Set the title of a given slide.
+
+    Args:
+    slide (Slide): The slide object whose title needs to be set.
+    title_text (str, optional): The text to set as the title. Defaults to an empty string.
+    """
+    # Access the title shape of the slide
     title_shape = slide.shapes.title
+    
+    # Set the title text
     title_shape.text = title_text
 
-def set_three_col_subtitle(slide):
+def set_three_col_subtitle(slide, placeholder_indices=const.THREE_COL_PLACEHOLDER_INDICES, subtitle=const.THREE_COL_TITLES):
+    """
+    Set the subtitles in three columns on a given slide.
+
+    Args:
+    slide (Slide): The slide object whose subtitles need to be set.
+    placeholder_indices (dict, optional): A dictionary containing the placeholder indices for each column.
+                                         Defaults to predefined indices (hardcoded idx values that will be consistent for prs.slide_masters[1].slide_layouts[6] only)
+    subtitle (dict, optional): A dictionary containing the title text for each column.
+                                         Defaults to predefined values.                                                                                  
+    """
+    # Load standard column titles from external constant
     subtitle = const.THREE_COL_TITLES
-    #hardcoded idx values that will be consistent for prs.slide_masters[1].slide_layouts[6] only
-    slide.placeholders[27].text = subtitle['col1']
-    slide.placeholders[29].text = subtitle['col2']
-    slide.placeholders[31].text = subtitle['col3']
-    return
+    
+    # Set the text in placeholders based on the provided indices
+    for col, idx in placeholder_indices.items():
+        slide.placeholders[idx].text = subtitle[col]
 
-def set_document_release_subtitle(slide, heading='new', date = '08/09/2023'):
-    subtitle = const.DOC_BOARD_TITLES
-    #hardcoded idx values that will be consistent for prs.slide_masters[1].slide_layouts[7] only
-    slide.placeholders[27].text = subtitle[heading]
-    slide.placeholders[28].text = date
-    return
+def set_document_release_subtitle(slide, heading='new', date='08/09/2023', placeholder_indices=const.DOC_RELEASE_PLACEHOLDER_INDICES, subtitle=const.DOC_BOARD_TITLES):
+    """
+    Set the subtitles for a document release slide.
 
-def create_project_button(slide, left, top, status="", contents_text="CONTENT", OVERRIDE=""):
-    if OVERRIDE == "":
-        BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
-    else:
-        BUTTON_DEF = OVERRIDE
+    Args:
+    slide (Slide): The slide object whose subtitles need to be set.
+    heading (str, optional): The heading to set for the slide. Defaults to 'new'.
+    date (str, optional): The date to set for the slide. Defaults to '08/09/2023'.
+    placeholder_indices (dict, optional): A dictionary containing the placeholder indices for heading and date.
+                                          Defaults to predefined indices.
+    subtitle (dict, optional): A dictionary containing the subtitle headings.
+                                          Defaults to predefined indices.
+    """
+    
+    # Set the text in placeholders based on the provided indices
+    slide.placeholders[placeholder_indices['heading']].text = subtitle[heading]
+    slide.placeholders[placeholder_indices['date']].text = date
 
-    # Add a rounded rectangle shape
-    rounded_rectangle = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
-                                            left, top, BUTTON_DEF['rectangle_width'], BUTTON_DEF['rectangle_height'])
-    if status == "":
-        FILL_COLOUR = OVERRIDE.get('fill', const.ThemeColors.PINK)
-        FONT_COLOUR = OVERRIDE.get('font_colour', const.ThemeColors.WHITE)
-        BORDER_COLOUR = OVERRIDE.get('border', const.ThemeColors.PINK)
-    else:
-        FILL_COLOUR = const.STATUS_COLOUR.get(status, const.ThemeColors.PINK)
-        BORDER_COLOUR = FILL_COLOUR
-        FONT_COLOUR = 0
+# Function to create rounded rectangle shape
+def create_rounded_rectangle(slide, left, top, width, height):
+    return slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
 
-    # Customize the rectangle Fill
-    fill = rounded_rectangle.fill
+# Function to set shape appearance
+def set_shape_appearance(shape, fill_color, border_color):
+    fill = shape.fill
     fill.solid()
-    fill.fore_color.theme_color = FILL_COLOUR
+    fill.fore_color.theme_color = fill_color
 
-    # Customize the rectangle line
-    line = rounded_rectangle.line
-    line.color.theme_color = BORDER_COLOUR      
+    line = shape.line
+    line.color.theme_color = border_color
     line.color.brightness = -0.50 
 
-    # Remove all Shadows
-    shadow = rounded_rectangle.shadow
+    #set shadows to nil
+    shadow = shape.shadow
     shadow.inherit = False
     shadow.blur_radius = Cm(0)
     shadow.distance = Cm(0)
     shadow.angle = 0
     shadow.alpha = 0
 
-    text_box = rounded_rectangle.text_frame
-    text_box.text = contents_text
+def set_shape_text_with_bold_first_run(shape, text, font_size, font_color):
+    text_box = shape.text_frame
+    text_box.text = text
     text_box.vertical_anchor = MSO_ANCHOR.TOP
 
-    first = 1
+    first = True
     for paragraph in text_box.paragraphs:
         for run in paragraph.runs:
-            if FONT_COLOUR != 0:
-                run.font.color.theme_color = FONT_COLOUR
-            if first == 1:
+            run.font.color.theme_color = font_color
+            run.font.size = font_size
+            if first:
                 run.font.bold = True
-                first = 0
-            run.font.size = BUTTON_DEF['font_size']
-    first = 1
+                first = False
 
-def row_calculator(index, type=1):
-    result = index / type
+# Refactored version of create_project_button function
+def create_project_button(slide, left, top, status="", contents_text="CONTENT", properties=const.PROJECT_BUTTON_CONSTANTS):
+    """
+    Create a project button on the given slide at the specified position.
+
+    Args:
+    slide (Slide): The slide object where the button will be created.
+    left (float): The x-coordinate for the button.
+    top (float): The y-coordinate for the button.
+    status (str, optional): The status of the project. Defaults to an empty string.
+    contents_text (str, optional): The text to display on the button. Defaults to "CONTENT".
+    properties (dict, optional): A dictionary containing the properties for the button. Defaults to DEFAULT_BUTTON_PROPERTIES.
+    """
+    # Create a rounded rectangle shape
+    rounded_rectangle = create_rounded_rectangle(slide, left, top, properties['rectangle_width'], properties['rectangle_height'])
+    
+    # Pull through separate status colours & set shape appearance
+    if status == "":
+        fill_color = properties.get('fill', const.ThemeColors.PINK)
+        font_color = properties.get('font_colour', const.ThemeColors.WHITE)
+        border_color = properties.get('border', const.ThemeColors.PINK)
+    else:
+        fill_color = properties.get('fill', const.PROJECT_BUTTON_CONSTANTS['fill'])
+        font_color = 0
+        border_color = properties.get('border', const.PROJECT_BUTTON_CONSTANTS['border'])
+
+    set_shape_appearance(rounded_rectangle, fill_color, border_color)
+    
+    # Set text in shape
+    font_size = properties.get('font_size', const.PROJECT_BUTTON_CONSTANTS['font_size'])
+    font_color = properties.get('font_color', const.PROJECT_BUTTON_CONSTANTS['font_color'])
+    set_shape_text_with_bold_first_run(rounded_rectangle, contents_text, font_size, font_color)
+
+def row_calculator(index, col=1):
+    """
+    Calculate the row index based on the given index and column type.
+
+    Args:
+    index (int): The index to be calculated.
+    col (int, optional): The column type to divide the index by. Defaults to 1.
+
+    Returns:
+    int: The floor value of the division result.
+    """
+    result = index / col
     row = math.floor(result)
     return row
 
+# Helper function to set contents text based on type_flag
+def get_contents_text_by_type(type_flag, row):
+    """
+    Get contents text for a button based on the type_flag and DataFrame row.
+
+    Args:
+    type_flag (str): The type flag to determine the contents text.
+    row (pd.Series): A row from the DataFrame containing project details.
+
+    Returns:
+    str: The contents text for the button.
+    """
+    
+    # Add project details to the rectangle (based on "type_flag" for specific contents)
+    if type_flag == 'ProjectOwner':
+        contents_text = f"{row['Title']}\n"
+        contents_text += f"Objective: {row['Objective']}\n"
+        contents_text += f"Staging: {const.get_staging_text(row['Staging'])}\n"
+        contents_text += f"Priority: {const.get_priority_text(row['Priority'])}"
+        if row['Status'] == 'Blocked':
+            contents_text += f"\nBlocked: {row['Closure Comments']}"
+        return contents_text
+    
+    elif type_flag == 'Objective':
+        contents_text = f"{row['Title']}\n"
+        contents_text += f"Owner: {row['Primary Owner']}\n"
+        contents_text += f"Staging: {const.get_staging_text(row['Staging'])}\n"
+        contents_text += f"{const.get_priority_text(row['Priority'])}"
+        return contents_text
+    
+    elif type_flag == 'Impact':
+        contents_text = f"{row['Title']}\n"
+        contents_text += f"Staging: {const.get_staging_text(row['Staging'])}"
+        return contents_text
+    
+    elif type_flag == 'OnHold':
+        contents_text = f"{row['Title']}\n"
+        contents_text += f"Owner: {row['Primary Owner']}\n"
+        contents_text += f"Staging: {const.get_staging_text(row['Staging'])}\n"
+        contents_text += "Project Summary: "
+        if not pd.isna(row['Project Summary']):
+            contents_text += f"{row['Project Summary']}"
+        return contents_text
+    
+    else:
+        return "UNKNOWN INPUT TYPE"
+    
+def calculate_position(col, index, COLUMN_FORMAT, SLIDE_FORMAT, BUTTON_FORMAT):
+    """
+    Calculate the position for placing a button based on the row and column.
+
+    Args:
+    row (int): The row index.
+    col (int): The column index.
+    index (int): The current item's index
+    BUTTON_FORMAT (dict): The format for the buttons.
+    SLIDE_FORMAT (dict): The format for the slide.
+    COLUMN_FORMAT (dict): The format for the columns.
+
+    Returns:
+    tuple: A tuple containing the left, top positions.
+    """
+    # Calculate position for the current rectangle
+    left = COLUMN_FORMAT['left']  
+
+    row = row_calculator(index, col)
+
+    if 'right' in COLUMN_FORMAT:
+        right = COLUMN_FORMAT['right']
+    else:
+        right = left
+    
+    if not index % 2 == 0:
+        left = right
+        
+    top = SLIDE_FORMAT['start_top'] + row * (BUTTON_FORMAT['rectangle_height'] + SLIDE_FORMAT['vertical_spacing'])
+
+    return left, top
+
+# Refactored version of populate_column function
 def populate_column(df, slide, BUTTON_FORMAT, SLIDE_FORMAT, COLUMN_FORMAT, type_flag='ProjectOwner', col=1):
-    for index, (_, project) in enumerate(df.iterrows()):
-        # Calculate current row and column
-        row = row_calculator(index, col)
+    """
+    Populate a column in the slide with project details from a DataFrame.
+
+    Args:
+    df (pd.DataFrame): The DataFrame containing project details.
+    slide (Slide): The slide object to be populated.
+    BUTTON_FORMAT (dict): The format for the buttons.
+    SLIDE_FORMAT (dict): The format for the slide.
+    COLUMN_FORMAT (dict): The format for the columns.
+    type_flag (str, optional): The type flag to determine the contents text. Defaults to 'ProjectOwner'.
+    col (int, optional): The column number. Defaults to 1.
+    """
+    for index, row in df.iterrows():
+        # Calculate position for the button
+        left, top = calculate_position(col, index, COLUMN_FORMAT, SLIDE_FORMAT, BUTTON_FORMAT)
+       
+        # Get contents text for the button
+        contents_text = get_contents_text_by_type(type_flag, row)
         
-        status = project['Status']
-
-        # Calculate position for the current rectangle
-        left = COLUMN_FORMAT['left']  
-
-        if 'right' in COLUMN_FORMAT:
-            right = COLUMN_FORMAT['right']
-        else:
-            right = left
-        
-        if not index % 2 == 0:
-            left = right
-
-        top = SLIDE_FORMAT['start_top'] + row * (BUTTON_FORMAT['rectangle_height'] + SLIDE_FORMAT['vertical_spacing'])
-
-        # Add project details to the rectangle (based on "type_flag" for specific contents)
-        if type_flag == 'ProjectOwner':
-            contents_text = f"{project['Title']}\n"
-            contents_text += f"Objective: {project['Objective']}\n"
-            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
-            contents_text += f"Priority: {const.get_priority_text(project['Priority'])}"
-            if project['Status'] == 'Blocked':
-                contents_text += f"\nBlocked: {project['Closure Comments']}"
-
-        if type_flag == 'Objective':
-            contents_text = f"{project['Title']}\n"
-            contents_text += f"Owner: {project['Primary Owner']}\n"
-            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
-            contents_text += f"{const.get_priority_text(project['Priority'])}"
-
-        if type_flag == 'Impact':
-            contents_text = f"{project['Title']}\n"
-            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}"
-               
-        if type_flag == 'OnHold':
-            contents_text = f"{project['Title']}\n"
-            contents_text += f"Owner: {project['Primary Owner']}\n"
-            contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
-            contents_text += "Project Summary: "
-            if not pd.isna(project['Project Summary']):
-                contents_text += f"{project['Project Summary']}"
-
-        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_FORMAT)
+        # Create the project button on the slide
+        create_project_button(slide, left, top, status=row['status'], contents_text=contents_text, properties=BUTTON_FORMAT)
 
 def create_body_slide_three_cols(df_1, df_2, df_3, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
     # Function to take contents of df (dataframe) and output onto a 3 column grid using pre-sets from constants.py
@@ -169,7 +291,7 @@ def create_body_slide_three_cols(df_1, df_2, df_3, prs, type_flag='ProjectOwner'
 
     # Create a new slide
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[6])  # Blank slide layout
-    set_title(slide, title_text)
+    set_slide_title(slide, title_text)
     set_three_col_subtitle(slide)
 
     # Set up Constants
@@ -205,7 +327,7 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
 
     # Create a new slide
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Blank slide layout
-    set_title(slide, title_text)
+    set_slide_title(slide, title_text)
 
     # Set up Constants
     SLIDE_DEF = const.FOUR_COL_SLIDE_CONSTANTS
@@ -440,7 +562,7 @@ def create_single_project_slide(project, prs, title_text=""):
 
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7])  # Blank slide layout
     
-    set_title(slide, project['Title'])
+    set_slide_title(slide, project['Title'])
 
     #Slide subtitle
     slide.placeholders[10].text = f"Project Summary: {summary}"
@@ -483,7 +605,7 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text="", BUT
 
     # Create a new slide
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7])  # Blank slide layout
-    set_title(slide, title_text)
+    set_slide_title(slide, title_text)
     set_document_release_subtitle(slide, type_flag, date)
 
     # Set up Constants

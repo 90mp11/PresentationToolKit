@@ -55,7 +55,10 @@ PRIORITY_TEXT_REPRESENTATION = {
 PROJECT_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(7.8),
     'rectangle_height': Cm(2.8),
-    'font_size': Pt(11)
+    'font_size': Pt(11),
+    'fill': ThemeColors.WHITE, 
+    'font_color': ThemeColors.BLACK,  
+    'border': ThemeColors.PINK  
 }
 
 # Document Button Constants
@@ -117,10 +120,21 @@ THREE_COL_TITLES = {
     'col3': 'Preparing Release:'
 }
 
+THREE_COL_PLACEHOLDER_INDICES = {
+    'col1': 27,
+    'col2': 29,
+    'col3': 31,
+}
+
 DOC_BOARD_TITLES = {
     'main': 'Technical Releases',
     'new': 'New Documents',
     'update': 'Updated Documents'
+}
+
+DOC_RELEASE_PLACEHOLDER_INDICES = {
+    'heading': 27, 
+    'date': 28
 }
 
 # Functions
