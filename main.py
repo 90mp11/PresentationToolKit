@@ -166,5 +166,12 @@ def output_all(project_csv, output_folder):
     output_path = pu.save_exit(prs, folder = output_folder)
     return output_path
 
+def all_docs(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_document_release_section(df, prs)
+    output_path = pu.save_exit(prs, "_DocumentBoard", folder = output_folder)
+    return output_path
+
 if __name__ == "__main__":
     main()
