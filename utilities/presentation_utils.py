@@ -5,25 +5,55 @@ from pptx.enum.shapes import MSO_SHAPE
 from datetime import date, datetime
 import pandas as pd
 import math
+import os
 
 import PresentationToolKit.utilities.constants as const 
 import PresentationToolKit.utilities.data_utils as du
 
-def create_blank_presentation(template='./templates/_template.pptx'):
+def create_blank_presentation(template: str = './templates/_template.pptx'):
+    """
+    Create a new PowerPoint presentation object based on a template.
+
+    Args:
+    template (str, optional): The path to the PowerPoint template file. Defaults to './templates/_template.pptx'.
+
+    Returns:
+    Presentation: A new Presentation object.
+    """
     prs = Presentation(template)
     return prs
 
-def save_exit(prs, modifier="", folder=""):
-    # Save the PowerPoint presentation
+def generate_filename(modifier: str = "") -> str:
+    """
+    Generate a filename based on the current date, time, and an optional modifier.
+
+    Args:
+    modifier (str, optional): An additional string to append to the filename. Defaults to an empty string.
+
+    Returns:
+    str: Generated filename.
+    """
     today = date.today()
     current_time = datetime.now().strftime("%H%M")  # Get current hour and minute
-    output_pptx = f'PEA_Project_Report_{today.strftime("%y%m%d")}_{current_time}'
-    output_pptx += modifier
-    output_pptx += ".pptx"
+    filename = f'PEA_Project_Report_{today.strftime("%y%m%d")}_{current_time}{modifier}.pptx'
+    return filename
 
-    save_to_location = folder + output_pptx
+def save_exit(prs, modifier: str = "", folder: str = "") -> str:
+    """
+    Save the PowerPoint presentation with a generated filename.
+
+    Args:
+    - prs : The presentation object to be saved.
+    - modifier (str, optional): An additional string to append to the filename. Defaults to an empty string.
+    - folder (str, optional): The folder where the presentation should be saved. Defaults to the current directory.
+
+    Returns:
+    str: The name of the saved PowerPoint file.
+    """
+    filename = generate_filename(modifier)
+    save_to_location = os.path.join(folder, filename)
     prs.save(save_to_location)
-    return output_pptx
+    return filename
 
 def create_title_slide(prs, title=""):
     """
@@ -446,91 +476,6 @@ def create_Impacted_section(df, prs, no_section=False, impacted_team='Training')
     col3 = df_rollout
 
     create_body_slide_three_cols(col1, col2, col3, prs, 'Impact', title_text)
-
-def create_Impacted_section_OLD(df, prs, no_section=False, impacted_team='Training'):
-##NOT YET REFACTORED
-    if no_section == False:
-        create_title_slide(f'Projects Impacting {impacted_team}')
-
-    # Filter projects by Impacted Team
-    projects = du.filter_dataframe_by_team(df, impacted_team)
-
-    # Set grid parameters
-    columns = 4  # Number of columns in the grid
-    rows = -(-len(df) // columns)  # Calculate the number of rows needed to fit all projects
-        
-    # Create a new slide
-    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Blank slide layout
-
-    # Set slide title to Objective
-    title_shape = slide.shapes.title
-    title_shape.text = impacted_team  + " - " + str(len(projects))
-
-    # Calculate the width and height of each rectangle
-    rectangle_width = Cm(7.8)
-    rectangle_height = Cm(2.8)
-
-    # Calculate the horizontal and vertical spacing between rectangles
-    horizontal_spacing = Cm(0.2)
-    vertical_spacing = Cm(0.2)
-
-    # Initialize starting positions
-    start_left = Cm(0.65)
-    start_top = Cm(2)
-
-    sorted_projects = projects.sort_values(by=['Priority'])
-
-    # Iterate through each project and add a rounded rectangle
-    for index, (_, project) in enumerate(sorted_projects.iterrows()):
-        # Calculate current row and column
-        row = index // columns
-        column = index % columns
-
-        # Calculate position for the current rectangle
-        left = start_left + column * (rectangle_width + horizontal_spacing)
-        top = start_top + row * (rectangle_height + vertical_spacing)
-
-        # Add a rounded rectangle shape
-        rounded_rectangle = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
-                                                left, top, rectangle_width, rectangle_height)
-
-        FILL_COLOUR = const.STATUS_COLOUR.get(project['Status'], const.ThemeColors.PINK)
-
-        # Customize the rectangle Fill
-        fill = rounded_rectangle.fill
-        fill.solid()
-        fill.fore_color.theme_color = FILL_COLOUR
-
-        # Customize the rectangle line
-        line = rounded_rectangle.line
-        line.color.theme_color = FILL_COLOUR      
-        line.color.brightness = -0.50 
-
-        # Remove all Shadows
-        shadow = rounded_rectangle.shadow
-        shadow.inherit = False
-        shadow.blur_radius = Cm(0)
-        shadow.distance = Cm(0)
-        shadow.angle = 0
-        shadow.alpha = 0
-
-        # Add project details to the rectangle
-        text = f"{project['Title']}\n"
-        text += f"Owner: {project['Primary Owner']}\n"
-        text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
-        text += f"{const.get_priority_text(project['Priority'])}"
-
-        text_box = rounded_rectangle.text_frame
-        text_box.text = text
-
-        first = 1
-        for paragraph in text_box.paragraphs:
-            for run in paragraph.runs:
-                if first == 1:
-                    run.font.bold = True
-                    first = 0
-                run.font.size = Pt(12)
-        first = 1    
 
 def create_project_section(df, prs, no_section=False):
     if no_section == False:
