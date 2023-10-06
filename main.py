@@ -1,7 +1,11 @@
 import argparse
-import PresentationToolKit.utilities.data_utils as du
-import PresentationToolKit.utilities.presentation_utils as pu
-import PresentationToolKit.utilities.constants as const
+#import PresentationToolKit.utilities.data_utils as du
+#import PresentationToolKit.utilities.presentation_utils as pu
+#import PresentationToolKit.utilities.constants as const
+
+import utilities.data_utils as du
+import utilities.presentation_utils as pu
+import utilities.constants as const
 
 def main():
     # Define command-line arguments
@@ -50,6 +54,11 @@ def main():
         "--docs",
         action="store_true",
         help="Imports the Document Change Log and outputs the Monthly Release Board slides",
+    )
+    parser.add_argument( # --document_changes
+        "--document_changes",
+        action="store_true",
+        help="Exports the Document Changes view into a single presentation",
     )
 
     # Parse the command-line 
@@ -117,6 +126,9 @@ def main():
         pu.create_document_release_section(df, prs, name_filter)
         pu.save_exit(prs, "_DocumentBoard", const.FILE_LOCATIONS['output_folder'])
         exit(1)
+    elif args.document_changes:
+        doc_changes(const.FILE_LOCATIONS['document_csv'], const.FILE_LOCATIONS['output_folder'])
+        exit(1)
     else:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -171,6 +183,13 @@ def all_docs(project_csv, output_folder):
     prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
     pu.create_document_release_section(df, prs)
     output_path = pu.save_exit(prs, "_DocumentBoard", folder = output_folder)
+    return output_path
+
+def doc_changes(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_document_changes_section(df, prs)
+    output_path = pu.save_exit(prs, "_DocumentChanges", folder = output_folder)
     return output_path
 
 if __name__ == "__main__":

@@ -5,9 +5,13 @@ from pptx.enum.shapes import MSO_SHAPE
 from datetime import date, datetime
 import pandas as pd
 import math
+from icecream import ic
 
-import PresentationToolKit.utilities.constants as const 
-import PresentationToolKit.utilities.data_utils as du
+#import PresentationToolKit.utilities.constants as const 
+#import PresentationToolKit.utilities.data_utils as du
+
+import utilities.constants as const 
+import utilities.data_utils as du
 
 def create_blank_presentation(template='./templates/_template.pptx'):
     prs = Presentation(template)
@@ -50,7 +54,7 @@ def set_three_col_subtitle(slide):
     slide.placeholders[31].text = subtitle['col3']
     return
 
-def set_document_release_subtitle(slide, heading='new', date = '08/09/2023'):
+def set_document_release_subtitle(slide, heading='new', date='08/09/2023'):
     subtitle = const.DOC_BOARD_TITLES
     #hardcoded idx values that will be consistent for prs.slide_masters[1].slide_layouts[7] only
     slide.placeholders[27].text = subtitle[heading]
@@ -476,7 +480,22 @@ def create_document_release_section(df, prs, filter=''):
         create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'update')
     return
 
-def create_document_release_slide(df, prs, date='08/09/2023', title_text="", BUTTON_OVERRIDE="", type_flag='new'):
+def create_document_changes_section(df, prs, filter=''):
+    
+    if filter:
+        df = df.loc[df['Release Forecast'] == filter]
+
+    grouped = df.groupby(df['Doc Reference'].fillna('None'))
+
+    for doc, changes in grouped:
+        title_text = doc
+
+        sorted_changes = changes.sort_values(by=['Release Forecast'])
+
+        create_document_release_slide(sorted_changes, prs, date='', title_text=title_text, BUTTON_OVERRIDE=const.DOCUMENT_BUTTON_CONSTANTS, type_flag='changes')
+    return
+
+def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BUTTON_OVERRIDE="", type_flag='new'):
     # Function to take contents of df (dataframe) and output onto a 2 column grid using pre-sets from constants.py for the Document Release Board
 
     columns = 2
@@ -515,6 +534,13 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text="", BUT
             contents_text = f"Document: {project['Doc Reference']}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Changes: "
+
+        if type_flag == 'changes':
+            clean_detail = du.convert_html_to_text_with_newlines(project['Detail'])
+
+            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text += f"Title: {project['Title']}\n"
+            contents_text += f"Detail: {clean_detail}"
 
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
 

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from bs4 import BeautifulSoup
 import html
 
@@ -62,7 +63,11 @@ def convert_html_to_text_with_newlines(html_str):
     Returns:
     - str: A plain text representation of the HTML string with newlines preserved.
     """
-    # Use BeautifulSoup to parse the HTML
+
+    if html_str is None or (isinstance(html_str, (float, int)) and np.isnan(html_str)) or (isinstance(html_str, str) and html_str.strip() == ""):
+        return ""
+
+    # Use BeautifulSoup to parse the HTML    
     soup = BeautifulSoup(html_str, 'html.parser')
     
     # Initialize an empty string to store the final text

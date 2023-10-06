@@ -120,7 +120,8 @@ THREE_COL_TITLES = {
 DOC_BOARD_TITLES = {
     'main': 'Technical Releases',
     'new': 'New Documents',
-    'update': 'Updated Documents'
+    'update': 'Updated Documents',
+    'changes': ' ',
 }
 
 # Functions
