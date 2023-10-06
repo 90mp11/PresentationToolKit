@@ -7,8 +7,11 @@ import pandas as pd
 import math
 import os
 
-import PresentationToolKit.utilities.constants as const 
-import PresentationToolKit.utilities.data_utils as du
+#import PresentationToolKit.utilities.constants as const 
+#import PresentationToolKit.utilities.data_utils as du
+
+import utilities.constants as const 
+import utilities.data_utils as du
 
 def create_blank_presentation(template: str = './templates/_template.pptx'):
     """
@@ -541,6 +544,21 @@ def create_document_release_section(df, prs, filter=''):
 
         create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'new')
         create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'update')
+    return
+
+def create_document_changes_section(df, prs, filter=''):
+    
+    if filter:
+        df = df.loc[df['Release Forecast'] == filter]
+
+    grouped = df.groupby(df['Doc Reference'].fillna('None'))
+
+    for doc, changes in grouped:
+        title_text = df['DocReference']
+
+        sorted_changes = changes.sort_values(by=['Release Forecast'].fillna('None'))
+
+        create_document_release_slide(sorted_changes, prs, doc, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'new')
     return
 
 def create_document_release_slide(df, prs, date='08/09/2023', title_text="", BUTTON_OVERRIDE="", type_flag='new'):
