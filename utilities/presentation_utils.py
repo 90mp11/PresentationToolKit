@@ -5,6 +5,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from datetime import date, datetime
 import pandas as pd
 import math
+import ast
 from icecream import ic
 
 #import PresentationToolKit.utilities.constants as const 
@@ -537,11 +538,24 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
 
         if type_flag == 'changes':
             clean_detail = du.convert_html_to_text_with_newlines(project['Detail'])
+            impact_token = map_impact_to_symbols(project['Impact'])
 
-            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text = f"Document: {project['Doc Reference']} || Impact: {impact_token}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Detail: {clean_detail}"
 
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
 
     return
+
+def map_impact_to_symbols(impact_str: str):
+    try:
+        impact_list = ast.literal_eval(impact_str)
+    except (ValueError, SyntaxError):
+        return {}
+    
+    impact_symbols = {}
+    for impact in impact_list:
+        impact_symbols[impact] = const.IMPACT_SYMBOL_MAPPING.get(impact, "UNKNOWN")
+    
+    return impact_symbols

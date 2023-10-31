@@ -221,6 +221,6 @@ def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=
     return output_path
 
 ### NAME=MAIN ###
-
 if __name__ == "__main__":
+    #doc_changes()
     main()

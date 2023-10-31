@@ -124,6 +124,14 @@ DOC_BOARD_TITLES = {
     'changes': ' ',
 }
 
+IMPACT_SYMBOL_MAPPING = {
+    "BDUK": "A",
+    "New Product": "B",
+    "Change of Method": "C",
+    "Change to Time Taken": "D",
+    "Change to Materials": "E",
+}
+
 # Functions
 def get_staging_text(staging):
     return STAGING_TEXT_REPRESENTATION.get(staging, "-----")
