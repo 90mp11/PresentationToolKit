@@ -76,58 +76,47 @@ def main():
         for eng in const.ENGINEERS:
             person_filter(person=eng)
         done_test=1
-        #exit(1)
     if args.who:
         name_filter = input("Name: ")
         person_filter(person=name_filter)
         done_test=1
-        #exit(1)
     if args.impact:
         impact_filter = input("Impacted Area: ")
         impact_slides(filter=impact_filter)
         done_test=1
-        #exit(1)
     if args.allimpacted:
         allimpacted()
         done_test=1
-        #exit(1)
     if args.objective:
         objective()
         done_test=1
-        #exit(1)
     if args.onhold:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_OnHold_slides(df, prs, no_section=True)
         pu.save_exit(prs, "_OnHold", const.FILE_LOCATIONS['output_folder'])
         done_test=1
-        #exit(1)
     if args.projects:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_project_section(df, prs)
         pu.save_exit(prs, "_Projects", const.FILE_LOCATIONS['output_folder'])
         done_test=1
-        #exit(1)
     if args.docs:
         name_filter = input("Date: ")
         all_docs(name_filter=name_filter)
         done_test=1
-        #exit(1)
     if args.document_changes:
         doc_changes(const.FILE_LOCATIONS['document_csv'], const.FILE_LOCATIONS['output_folder'])
         done_test=1
-        #exit(1)
     if args.debug:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7]) #Doc Release Board Template
         pu.placeholder_identifier(slide)
         done_test=1
-        #exit(1)
     if args.output_all:
         output_all()
         done_test=1
-        #exit(1)
     if done_test == 0:
         output_all()
     exit(1)
@@ -222,5 +211,4 @@ def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=
 
 ### NAME=MAIN ###
 if __name__ == "__main__":
-    #doc_changes()
     main()
