@@ -55,7 +55,17 @@ PRIORITY_TEXT_REPRESENTATION = {
 PROJECT_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(7.8),
     'rectangle_height': Cm(2.8),
-    'font_size': Pt(11)
+    'font_size': Pt(11),
+    'fill': ThemeColors.WHITE,
+    'font_colour': ThemeColors.BLACK,
+    'border': ThemeColors.PINK,
+    'fill_brightness': 0,
+    'status_colors': {
+        'Open': ThemeColors.PINK,
+        'On Hold': ThemeColors.ORANGE,
+        'New': ThemeColors.PURPLE,
+        'Blocked': ThemeColors.ORANGE,
+    }
 }
 
 # Document Button Constants
@@ -65,7 +75,15 @@ DOCUMENT_BUTTON_CONSTANTS = {
     'font_size': Pt(11),
     'fill': ThemeColors.WHITE,
     'font_colour': ThemeColors.BLACK,
-    'border': ThemeColors.PINK
+    'border': ThemeColors.PINK,
+    'fill_brightness': 0.8,
+    'status_colors': {
+        'New': ThemeColors.GREEN,
+        'In Progress': ThemeColors.ORANGE,
+        'Internal Review': ThemeColors.BLUE,
+        'External Review': ThemeColors.BLUE,
+        'Ready to Release': ThemeColors.PINK
+    }
 }
 
 # Project Button Constants

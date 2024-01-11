@@ -72,18 +72,21 @@ def create_project_button(slide, left, top, status="", contents_text="CONTENT", 
     rounded_rectangle = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
                                             left, top, BUTTON_DEF['rectangle_width'], BUTTON_DEF['rectangle_height'])
     if status == "":
-        FILL_COLOUR = OVERRIDE.get('fill', const.ThemeColors.PINK)
-        FONT_COLOUR = OVERRIDE.get('font_colour', const.ThemeColors.WHITE)
-        BORDER_COLOUR = OVERRIDE.get('border', const.ThemeColors.PINK)
+        FILL_COLOUR = BUTTON_DEF.get('fill', const.ThemeColors.PINK)
+        FONT_COLOUR = BUTTON_DEF.get('font_colour', const.ThemeColors.WHITE)
+        BORDER_COLOUR = BUTTON_DEF.get('border', const.ThemeColors.PINK)
+        FILL_BRIGHTNESS = BUTTON_DEF.get('fill_brightness', 0)
     else:
-        FILL_COLOUR = const.STATUS_COLOUR.get(status, const.ThemeColors.PINK)
-        BORDER_COLOUR = FILL_COLOUR
-        FONT_COLOUR = 0
+        FILL_COLOUR = BUTTON_DEF['status_colors'].get(status, const.ThemeColors.PINK)
+        BORDER_COLOUR = BUTTON_DEF.get('border', FILL_COLOUR)
+        FONT_COLOUR = BUTTON_DEF.get('font_colour', 0)
+        FILL_BRIGHTNESS = BUTTON_DEF.get('fill_brightness', 0)
 
     # Customize the rectangle Fill
     fill = rounded_rectangle.fill
     fill.solid()
     fill.fore_color.theme_color = FILL_COLOUR
+    fill.fore_color.brightness = FILL_BRIGHTNESS
 
     # Customize the rectangle line
     line = rounded_rectangle.line
@@ -519,7 +522,7 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
         # Calculate current row and column
         row = index // columns
         column = index % columns
-        status = ""
+        status = project['Status']
 
         # Calculate position for the current rectangle
         left = SLIDE_DEF['start_left'] + column * (BUTTON_DEF['rectangle_width'] + SLIDE_DEF['horizontal_spacing'])
@@ -527,12 +530,14 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
 
         # Add project details to the rectangle (based on "type_flag" for specific contents)
         if type_flag == 'new':
-            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text = f"Document: {project['Doc Reference']}   ||   Status: {status}\n"
+            contents_text += f"Owner: {project['Primary Owner']}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Changes: "
 
         if type_flag == 'update':
-            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text = f"Document: {project['Doc Reference']}   ||   Status: {status}\n"
+            contents_text += f"Owner: {project['Primary Owner']}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Changes: "
 
@@ -540,12 +545,11 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
             clean_detail = du.convert_html_to_text_with_newlines(project['Detail'])
             impact_token = map_impact_to_symbols(project['Impact'])
 
-            contents_text = f"Document: {project['Doc Reference']} || Impact: {impact_token}\n"
+            contents_text = f"Document: {project['Doc Reference']}   ||   Impact: {impact_token}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Detail: {clean_detail}"
 
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
-
     return
 
 def map_impact_to_symbols(impact_str: str):
