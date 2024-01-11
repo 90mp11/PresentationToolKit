@@ -56,15 +56,15 @@ PROJECT_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(7.8),
     'rectangle_height': Cm(2.8),
     'font_size': Pt(11),
-    'fill': ThemeColors.WHITE,
-    'font_colour': ThemeColors.BLACK,
+    'fill': ThemeColors.PINK,
+    'font_colour': ThemeColors.WHITE,
     'border': ThemeColors.PINK,
     'fill_brightness': 0,
     'status_colors': {
         'Open': ThemeColors.PINK,
         'On Hold': ThemeColors.ORANGE,
         'New': ThemeColors.PURPLE,
-        'Blocked': ThemeColors.ORANGE,
+        'Blocked': ThemeColors.ORANGE
     }
 }
 
@@ -90,27 +90,57 @@ DOCUMENT_BUTTON_CONSTANTS = {
 ONHOLD_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(7.8),
     'rectangle_height': Cm(4.4),
-    'font_size': Pt(11)
+    'font_size': Pt(11),
+    'fill': ThemeColors.ORANGE,
+    'font_colour': ThemeColors.WHITE,
+    'border': ThemeColors.ORANGE,
+    'fill_brightness': 0,
+    'status_colors': {
+        'Open': ThemeColors.PINK,
+        'On Hold': ThemeColors.ORANGE,
+        'New': ThemeColors.PURPLE,
+        'Blocked': ThemeColors.ORANGE,
+    }
 }
 
 FOUR_COL_SLIDE_CONSTANTS = {
     'start_left': Cm(0.65),
     'start_top': Cm(2),
     'horizontal_spacing': Cm(0.2),
-    'vertical_spacing': Cm(0.2)
+    'vertical_spacing': Cm(0.2),
 }
 
 # Project Button Constants
 THREE_COL_PROJECT_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(8.6),
     'rectangle_height': Cm(2),
-    'font_size': Pt(10)
+    'font_size': Pt(10),
+    'fill': ThemeColors.ORANGE,
+    'font_colour': ThemeColors.WHITE,
+    'border': ThemeColors.ORANGE,
+    'fill_brightness': 0,
+    'status_colors': {
+        'Open': ThemeColors.PINK,
+        'On Hold': ThemeColors.ORANGE,
+        'New': ThemeColors.PURPLE,
+        'Blocked': ThemeColors.ORANGE,
+    }
 }
 
 THREE_COL_PROJECT_BUTTON_COL1_CONSTANTS = {
     'rectangle_width': Cm(6.27),
     'rectangle_height': Cm(2),
-    'font_size': Pt(10)
+    'font_size': Pt(10),
+    'fill': ThemeColors.PINK,
+    'font_colour': ThemeColors.WHITE,
+    'border': ThemeColors.PINK,
+    'fill_brightness': 0,
+    'status_colors': {
+        'Open': ThemeColors.PINK,
+        'On Hold': ThemeColors.ORANGE,
+        'New': ThemeColors.PURPLE,
+        'Blocked': ThemeColors.ORANGE,
+    }
 }
 
 THREE_COL_SLIDE_CONSTANTS = {
