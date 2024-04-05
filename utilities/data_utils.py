@@ -15,6 +15,10 @@ def filter_dataframe_by_status(dataframe, status):
     filtered_df = dataframe[dataframe['Status'].apply(lambda statuses: status in statuses)]
     return filtered_df
 
+def filter_dataframe_by_release_group(dataframe, group):
+    filtered_df = dataframe[dataframe['Release Group'].apply(lambda groups: group in groups)]
+    return filtered_df
+
 def filter_dataframe_by_staging(dataframe, staging):
     filtered_df = dataframe[dataframe['Staging'].apply(lambda statuses: staging in statuses)]
     return filtered_df

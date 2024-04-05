@@ -65,13 +65,26 @@ def main():
         action="store_true",
         help="Exports the Standard Output Report in a single presentation",
     )
+    parser.add_argument( # --release
+        "--release",
+        action="store_true",
+        help="Outputs the ReleaseBoard Impact Report in a single presentation",
+    )
+    parser.add_argument( # --internal
+        "--internal",
+        action="store_true",
+        help="Sets a flag for Internal use only - Outputs the ReleaseBoard Impact Report in a single presentation",
+    )
 
     # Parse the command-line 
     args = parser.parse_args()
 
     done_test=0
+    internal = False
 
     # Determine which commands to execute based on the command-line arguments
+    if args.internal:
+        internal = True
     if args.engineering:
         for eng in const.ENGINEERS:
             person_filter(person=eng)
@@ -116,6 +129,10 @@ def main():
         done_test=1
     if args.output_all:
         output_all()
+        done_test=1
+    if args.release:
+        release_filter = input("Release Group: ")
+        release_board_slides(filter=release_filter, internal=internal)
         done_test=1
     if done_test == 0:
         output_all()
@@ -209,6 +226,28 @@ def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=
         output_path = pu.save_exit(prs, "_DocumentChanges", folder = output_folder)
     return output_path
 
-### NAME=MAIN ###
+def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter='', save=True, prs=None, internal=False):
+    df = du.create_blank_dataframe(project_csv)
+    save_tail = "_DocumentBoard"
+    if filter:
+        df = df.loc[df['Release Group'] == filter]   
+        save_tail = "_"+filter
+    impacted = du.impacted_teams_list(df)
+
+    if prs is None:
+        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+
+    pu.create_document_release_section(df, prs, filter, internal=internal)
+    output_path = ""
+    
+    if not internal:
+        for imp in impacted:
+            pu.create_document_Impacted_section(df, prs, no_section=False, impacted_team=imp, group_filter=filter)
+    if save:
+        output_path = pu.save_exit(prs, save_tail, folder = output_folder)
+
+    return output_path
+
+### NAME==MAIN ###
 if __name__ == "__main__":
     main()

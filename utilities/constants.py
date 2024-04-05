@@ -170,6 +170,7 @@ DOC_BOARD_TITLES = {
     'new': 'New Documents',
     'update': 'Updated Documents',
     'changes': ' ',
+    'release_impact': 'Changes to Review:',
 }
 
 IMPACT_SYMBOL_MAPPING = {

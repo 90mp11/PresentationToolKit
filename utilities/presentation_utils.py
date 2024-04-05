@@ -463,10 +463,10 @@ def create_single_project_slide(project, prs, title_text=""):
 
     return
 
-def create_document_release_section(df, prs, filter=''):
+def create_document_release_section(df, prs, filter='', internal=False):
     
     if filter:
-        df = df.loc[df['Release Forecast'] == filter]
+        df = df.loc[df['Release Group'] == filter]
 
     grouped = df.groupby(df['Release Group'].fillna('None'))
 
@@ -480,8 +480,8 @@ def create_document_release_section(df, prs, filter=''):
         sorted_new_docs = new_docs.sort_values(by=['Doc Reference'])
         sorted_update_docs = update_docs.sort_values(by=['Doc Reference'])
 
-        create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='new', full_text=True)
-        create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='update', full_text=True)
+        create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='new', full_text=True, internal=internal)
+        create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='update', full_text=True,internal=internal)
     return
 
 def create_document_changes_section(df, prs, filter=''):
@@ -499,10 +499,27 @@ def create_document_changes_section(df, prs, filter=''):
         create_document_release_slide(sorted_changes, prs, date='', title_text=title_text, BUTTON_OVERRIDE=const.DOCUMENT_BUTTON_CONSTANTS, type_flag='changes', full_text=True)
     return
 
-def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BUTTON_OVERRIDE="", type_flag='new', full_text=False):
-    # Function to take contents of df (dataframe) and output onto a 2 column grid using pre-sets from constants.py for the Document Release Board
+def create_document_Impacted_section(df, prs, no_section=False, impacted_team='Training', group_filter='', internal=False):
+    subtitle = impacted_team
 
+    if no_section == False:
+        create_title_slide(prs, f'Documents Impacting {impacted_team}')
+
+    if group_filter:
+        subtitle = group_filter
+
+    # Filter projects by Impacted Team
+    documents = du.filter_dataframe_by_team(df, impacted_team)
+    sorted_projects = documents.sort_values(by=['Doc Reference'])
+
+    title_text = impacted_team  + " - " + str(len(documents))
+
+    create_document_release_slide(documents, prs, subtitle, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='release_impact', full_text=True, internal=internal)
+
+def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BUTTON_OVERRIDE="", type_flag='new', full_text=False, internal=False):
+    # Function to take contents of df (dataframe) and output onto a 2 column grid using pre-sets from constants.py for the Document Release Board
     columns = 2
+    status_text = ""
 
     # Create a new slide
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7])  # Blank slide layout
@@ -533,18 +550,34 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
         else:
             clean_detail = ""
 
+        if internal:
+            status_text = f"   ||   Status: {status}"
+
         # Add project details to the rectangle (based on "type_flag" for specific contents)
         if type_flag == 'new':
-            contents_text = f"Document: {project['Doc Reference']}   ||   Status: {status}\n"
-            contents_text += f"Owner: {project['Primary Owner']}\n"
+            contents_text = f"Document: {project['Doc Reference']}{status_text}\n"
+            if internal:
+                contents_text += f"Owner: {project['Primary Owner']}\n"
             contents_text += f"Title: {project['Title']}\n"
-            contents_text += f"Changes: {clean_detail}"
+            contents_text += f"Summary: {clean_detail}"
+            if not internal:
+                status = ""
 
         if type_flag == 'update':
-            contents_text = f"Document: {project['Doc Reference']}   ||   Status: {status}\n"
-            contents_text += f"Owner: {project['Primary Owner']}\n"
+            contents_text = f"Document: {project['Doc Reference']}{status_text}\n"
+            if internal:            
+                contents_text += f"Owner: {project['Primary Owner']}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Changes: {clean_detail}"
+            if not internal:
+                status = ""
+
+        if type_flag == 'release_impact':
+            contents_text = f"Document(s): {project['Doc Reference']}\n"
+            contents_text += f"Change Title: {project['Title']}\n"
+            contents_text += f"Summary of Changes: {clean_detail}"
+            if not internal:
+                status = ""
 
         if type_flag == 'changes':
             impact_token = map_impact_to_symbols(project['Impact'])
