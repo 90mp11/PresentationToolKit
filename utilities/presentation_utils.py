@@ -22,7 +22,7 @@ def save_exit(prs, modifier="", folder=""):
     # Save the PowerPoint presentation
     today = date.today()
     current_time = datetime.now().strftime("%H%M")  # Get current hour and minute
-    output_pptx = f'PEA_Project_Report_{today.strftime("%y%m%d")}_{current_time}'
+    output_pptx = f'{today.strftime("%y%m%d")}_{current_time}_PEA_Project_Report'
     output_pptx += modifier
     output_pptx += ".pptx"
 
@@ -468,7 +468,7 @@ def create_document_release_section(df, prs, filter=''):
     if filter:
         df = df.loc[df['Release Forecast'] == filter]
 
-    grouped = df.groupby(df['Release Forecast'].fillna('None'))
+    grouped = df.groupby(df['Release Group'].fillna('None'))
 
     for date, documents in grouped:
         title_text = 'Technical Releases'
@@ -480,8 +480,8 @@ def create_document_release_section(df, prs, filter=''):
         sorted_new_docs = new_docs.sort_values(by=['Doc Reference'])
         sorted_update_docs = update_docs.sort_values(by=['Doc Reference'])
 
-        create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'new')
-        create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, 'update')
+        create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='new', full_text=True)
+        create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='update', full_text=True)
     return
 
 def create_document_changes_section(df, prs, filter=''):
@@ -496,10 +496,10 @@ def create_document_changes_section(df, prs, filter=''):
 
         sorted_changes = changes.sort_values(by=['Release Forecast'])
 
-        create_document_release_slide(sorted_changes, prs, date='', title_text=title_text, BUTTON_OVERRIDE=const.DOCUMENT_BUTTON_CONSTANTS, type_flag='changes')
+        create_document_release_slide(sorted_changes, prs, date='', title_text=title_text, BUTTON_OVERRIDE=const.DOCUMENT_BUTTON_CONSTANTS, type_flag='changes', full_text=True)
     return
 
-def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BUTTON_OVERRIDE="", type_flag='new'):
+def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BUTTON_OVERRIDE="", type_flag='new', full_text=False):
     # Function to take contents of df (dataframe) and output onto a 2 column grid using pre-sets from constants.py for the Document Release Board
 
     columns = 2
@@ -528,21 +528,25 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
         left = SLIDE_DEF['start_left'] + column * (BUTTON_DEF['rectangle_width'] + SLIDE_DEF['horizontal_spacing'])
         top = SLIDE_DEF['start_top'] + row * (BUTTON_DEF['rectangle_height'] + SLIDE_DEF['vertical_spacing'])
 
+        if full_text:
+            clean_detail = du.convert_html_to_text_with_newlines(project['Release Text'])
+        else:
+            clean_detail = ""
+
         # Add project details to the rectangle (based on "type_flag" for specific contents)
         if type_flag == 'new':
             contents_text = f"Document: {project['Doc Reference']}   ||   Status: {status}\n"
             contents_text += f"Owner: {project['Primary Owner']}\n"
             contents_text += f"Title: {project['Title']}\n"
-            contents_text += f"Changes: "
+            contents_text += f"Changes: {clean_detail}"
 
         if type_flag == 'update':
             contents_text = f"Document: {project['Doc Reference']}   ||   Status: {status}\n"
             contents_text += f"Owner: {project['Primary Owner']}\n"
             contents_text += f"Title: {project['Title']}\n"
-            contents_text += f"Changes: "
+            contents_text += f"Changes: {clean_detail}"
 
         if type_flag == 'changes':
-            clean_detail = du.convert_html_to_text_with_newlines(project['Detail'])
             impact_token = map_impact_to_symbols(project['Impact'])
 
             contents_text = f"Document: {project['Doc Reference']}   ||   Impact: {impact_token}\n"

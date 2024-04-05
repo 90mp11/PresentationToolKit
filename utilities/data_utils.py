@@ -79,7 +79,7 @@ def convert_html_to_text_with_newlines(html_str):
         final_text += elem
         # Add a newline if the text ends with a period or is contained within a <p> tag
         if elem.endswith('.') or (hasattr(elem, 'parent') and elem.parent.name == 'p'):
-            final_text += '\n'
+            final_text += "\n"
     
     # Unescape HTML entities
     final_text = html.unescape(final_text)
@@ -88,5 +88,6 @@ def convert_html_to_text_with_newlines(html_str):
     final_text = final_text.replace("â€‹", "")
     final_text = final_text.replace("&%23160;", "")
     final_text = final_text.replace("&%2358;", ":")
-    
+    final_text = final_text.replace("\r\n", "\n")
+
     return final_text.strip()  # Strip removes leading/trailing white spaces
