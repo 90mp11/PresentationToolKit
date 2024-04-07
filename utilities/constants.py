@@ -83,8 +83,8 @@ DOCUMENT_BUTTON_CONSTANTS = {
         'Internal Review': ThemeColors.BLUE,
         'External Review': ThemeColors.BLUE,
         'Ready to Release': ThemeColors.PINK,
-        'Draft Issued': ThemeColors.BLUE, # new internal review status
-        'Draft Finalised': ThemeColors.BLUE, # new external review status
+        'Internal Draft Review': ThemeColors.BLUE, # new internal review status
+        'PDF Final Review': ThemeColors.BLUE, # new external review status
     }
 }
 
