@@ -1,0 +1,9 @@
+argparse
+pandas
+numpy
+bs4
+html
+pptx
+icecream
+ast
+math
