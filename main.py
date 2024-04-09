@@ -1,4 +1,5 @@
 import argparse
+import os
 #import PresentationToolKit.utilities.data_utils as du
 #import PresentationToolKit.utilities.presentation_utils as pu
 #import PresentationToolKit.utilities.constants as const
@@ -248,6 +249,20 @@ def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], outpu
 
     return output_path
 
+### SETUP FUNCTIONS ###
+
+def create_folders(folder_names=['output', 'raw', 'templates', 'utilities']):
+    for folder_name in folder_names:
+        # Construct the path for the folder
+        path = os.path.join(os.getcwd(), folder_name)
+        
+        # Check if the folder already exists to avoid trying to create it again
+        if not os.path.exists(path):
+            # Create the folder
+            os.mkdir(path)
+            print(f"Created missing folder: {path}")
+
 ### NAME==MAIN ###
 if __name__ == "__main__":
+    create_folders()
     main()
