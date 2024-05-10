@@ -484,6 +484,28 @@ def create_document_release_section(df, prs, filter='', internal=False):
         create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='update', full_text=True,internal=internal)
     return
 
+def create_document_release_section_multi_filter(df, prs, filter=[], internal=False):
+    
+    if filter:
+        df = df[df['Release Group'].isin(filter)]   
+
+    grouped = df.groupby(df['Release Group'].fillna('None'))
+
+    for date, documents in grouped:
+        title_text = 'Technical Releases'
+
+        # Filtering based on 'Doc Reference'
+        new_docs = documents[documents['Doc Reference'].str.endswith('NEW')]
+        update_docs = documents[~documents['Doc Reference'].str.endswith('NEW')]
+
+        sorted_new_docs = new_docs.sort_values(by=['Doc Reference'])
+        sorted_update_docs = update_docs.sort_values(by=['Doc Reference'])
+
+        create_document_release_slide(sorted_new_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='new', full_text=True, internal=internal)
+        create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='update', full_text=True,internal=internal)
+    return
+
+
 def create_document_changes_section(df, prs, filter=''):
     
     if filter:
@@ -507,6 +529,23 @@ def create_document_Impacted_section(df, prs, no_section=False, impacted_team='T
 
     if group_filter:
         subtitle = group_filter
+
+    # Filter projects by Impacted Team
+    documents = du.filter_dataframe_by_team(df, impacted_team)
+    sorted_projects = documents.sort_values(by=['Doc Reference'])
+
+    title_text = impacted_team  + " - " + str(len(documents))
+
+    create_document_release_slide(documents, prs, subtitle, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='release_impact', full_text=True, internal=internal)
+
+def create_document_Impacted_section_multi_filter(df, prs, no_section=False, impacted_team='Training', group_filter=[], internal=False):
+    subtitle = impacted_team
+
+    if no_section == False:
+        create_title_slide(prs, f'Documents Impacting {impacted_team}')
+
+    if group_filter:
+        subtitle = " and ".join(group_filter)
 
     # Filter projects by Impacted Team
     documents = du.filter_dataframe_by_team(df, impacted_team)

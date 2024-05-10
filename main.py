@@ -133,8 +133,14 @@ def main():
         done_test=1
     if args.release:
         release_filter = input("Release Group: ")
-        release_board_slides(filter=release_filter, internal=internal)
+        if release_filter == "BDUK":
+            release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal)
+        else:
+            release_board_slides(filter=release_filter, internal=internal)
         done_test=1
+
+        # TODO - change filename to "Document", change template title to "Document", add filter so only External Review is selected for External Report
+
     if done_test == 0:
         output_all()
     exit(1)
@@ -244,6 +250,28 @@ def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], outpu
     if not internal:
         for imp in impacted:
             pu.create_document_Impacted_section(df, prs, no_section=False, impacted_team=imp, group_filter=filter)
+    if save:
+        output_path = pu.save_exit(prs, save_tail, folder = output_folder)
+
+    return output_path
+
+def release_board_slides_multi_filter(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter='[]', save=True, prs=None, internal=False):
+    df = du.create_blank_dataframe(project_csv)
+    save_tail = "_DocumentBoard"
+    if filter:
+        df = df[df['Release Group'].isin(filter)]    
+        save_tail = "_" + "And".join(filter)  # Assuming you want to concatenate filter names for the filename
+    impacted = du.impacted_teams_list(df)
+
+    if prs is None:
+        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+
+    pu.create_document_release_section_multi_filter(df, prs, filter, internal=internal)
+    output_path = ""
+    
+    if not internal:
+        for imp in impacted:
+            pu.create_document_Impacted_section_multi_filter(df, prs, no_section=False, impacted_team=imp, group_filter=filter)
     if save:
         output_path = pu.save_exit(prs, save_tail, folder = output_folder)
 
