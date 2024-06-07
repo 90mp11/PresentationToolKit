@@ -18,11 +18,11 @@ def create_blank_presentation(template='./templates/_template.pptx'):
     prs = Presentation(template)
     return prs
 
-def save_exit(prs, modifier="", folder=""):
+def save_exit(prs, report_type="PEA_Project_Report", modifier="", folder=""):
     # Save the PowerPoint presentation
     today = date.today()
     current_time = datetime.now().strftime("%H%M")  # Get current hour and minute
-    output_pptx = f'{today.strftime("%y%m%d")}_{current_time}_PEA_Project_Report'
+    output_pptx = f'{today.strftime("%y%m%d")}_{current_time}_{report_type}'
     output_pptx += modifier
     output_pptx += ".pptx"
 
@@ -268,6 +268,49 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
 
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
 
+def create_body_slide_four_cols_all_projects(df, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
+    # Function to take contents of df (dataframe) and output onto a 4 column grid using pre-sets from constants.py
+    # Set grid parameters
+    columns = 4  # Number of columns in the grid
+
+    # Create a new slide
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Blank slide layout
+    set_title(slide, title_text)
+
+    # Set up Constants
+    SLIDE_DEF = const.FOUR_COL_SLIDE_CONSTANTS
+
+    if BUTTON_OVERRIDE == "":
+        BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
+    else:
+        BUTTON_DEF = BUTTON_OVERRIDE
+
+        # Iterate through each project and add a rounded rectangle
+    for index, (_, project) in enumerate(df.iterrows()):
+        # Calculate current row and column
+        row = index // columns
+        column = index % columns
+        status = project['Status']
+
+        # Calculate position for the current rectangle
+        left = SLIDE_DEF['start_left'] + column * (BUTTON_DEF['rectangle_width'] + SLIDE_DEF['horizontal_spacing'])
+        top = SLIDE_DEF['start_top'] + row * (BUTTON_DEF['rectangle_height'] + SLIDE_DEF['vertical_spacing'])
+
+        # Add project details to the rectangle (based on "type_flag" for specific contents)
+        if type_flag == 'ProjectOwner':
+            contents_text = f"{project['Title']}"
+
+        if type_flag == 'Objective':
+            contents_text = f"{project['Title']}"
+
+        if type_flag == 'Impact':
+            contents_text = f"{project['Title']}"
+
+        if type_flag == 'OnHold':
+            contents_text = f"{project['Title']}"
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
+
 def create_OnHold_slides(df, prs, no_section=False):
     if no_section == False:
         create_title_slide(prs, f'On Hold Projects')
@@ -276,6 +319,11 @@ def create_OnHold_slides(df, prs, no_section=False):
     sorted = on_hold.sort_values(by=['Primary Owner'])
     title_text = "On-Hold Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='OnHold', title_text=title_text, BUTTON_OVERRIDE=const.ONHOLD_BUTTON_CONSTANTS)
+
+def create_AllProjects_slide(df, prs, filter=""):
+    
+    title_text = "All Projects"
+    create_body_slide_four_cols_all_projects(df, prs, 'ProjectOwner', title_text, const.ALL_PROJECTS_BUTTON_CONSTANTS)
 
 def create_ProjectOwner_slides(df, prs, filter=""):
     

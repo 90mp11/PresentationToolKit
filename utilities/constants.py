@@ -1,7 +1,7 @@
 from pptx.util import Pt, Cm
 from pptx.enum.dml import MSO_THEME_COLOR
 
-ENGINEERS = ['Andy Oxford', 'Chris Kelly', 'Luke Phillips', 'Matthew Harbord', 'Neil Griffin', 'Gordon Pyrah']
+ENGINEERS = ['Andy Oxford', 'Chris Kelly', 'Luke Phillips', 'Matthew Harbord', 'Neil Griffin', 'Gordon Pyrah', 'Tom Wright']
 RTL = ['Irina Gonik', 'Peter Little', 'Craig McNamara']
 
 # Theme Colors
@@ -55,6 +55,22 @@ PRIORITY_TEXT_REPRESENTATION = {
 PROJECT_BUTTON_CONSTANTS = {
     'rectangle_width': Cm(7.8),
     'rectangle_height': Cm(2.8),
+    'font_size': Pt(11),
+    'fill': ThemeColors.PINK,
+    'font_colour': ThemeColors.WHITE,
+    'border': ThemeColors.PINK,
+    'fill_brightness': 0,
+    'status_colors': {
+        'Open': ThemeColors.PINK,
+        'On Hold': ThemeColors.ORANGE,
+        'New': ThemeColors.PURPLE,
+        'Blocked': ThemeColors.ORANGE
+    }
+}
+
+ALL_PROJECTS_BUTTON_CONSTANTS = {
+    'rectangle_width': Cm(7.8),
+    'rectangle_height': Cm(0.8),
     'font_size': Pt(11),
     'fill': ThemeColors.PINK,
     'font_colour': ThemeColors.WHITE,

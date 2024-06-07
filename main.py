@@ -108,13 +108,13 @@ def main():
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_OnHold_slides(df, prs, no_section=True)
-        pu.save_exit(prs, "_OnHold", const.FILE_LOCATIONS['output_folder'])
+        pu.save_exit(prs, "PEA_Project_Report", "_OnHold", const.FILE_LOCATIONS['output_folder'])
         done_test=1
     if args.projects:
         df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_project_section(df, prs)
-        pu.save_exit(prs, "_Projects", const.FILE_LOCATIONS['output_folder'])
+        pu.save_exit(prs, "PEA_Project_Report", "_Projects", const.FILE_LOCATIONS['output_folder'])
         done_test=1
     if args.docs:
         name_filter = input("Date: ")
@@ -155,7 +155,7 @@ def person_filter(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder
     pu.create_Objective_slides(df, prs, person)
     output_path = ""
     if save:
-        output_path = pu.save_exit(prs, "_"+person, output_folder)
+        output_path = pu.save_exit(prs, "PEA_Project_Report", "_"+person, output_folder)
     return output_path
 
 def impact_slides(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter=""):
@@ -166,11 +166,11 @@ def impact_slides(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder
         for imp in impacted:
             prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
             pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
-            pu.save_exit(prs, "_"+imp, output_folder)
+            pu.save_exit(prs, "PEA_Project_Report", "_"+imp, output_folder)
     else:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=filter)
-        output_path = pu.save_exit(prs, "_"+filter, output_folder)
+        output_path = pu.save_exit(prs, "PEA_Project_Report", "_"+filter, output_folder)
     return output_path
 
 def allimpacted(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
@@ -182,7 +182,7 @@ def allimpacted(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=c
     for imp in impacted:
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
     if save:
-        output_path = pu.save_exit(prs, "_AllImpacts", output_folder)
+        output_path = pu.save_exit(prs, "PEA_Project_Report", "_AllImpacts", output_folder)
     return output_path
 
 def objective(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
@@ -192,13 +192,14 @@ def objective(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=con
     pu.create_Objective_slides(df, prs)
     output_path = ""
     if save:
-        output_path = pu.save_exit(prs, "_Objective", output_folder)
+        output_path = pu.save_exit(prs, "PEA_Project_Report", "_Objective", output_folder)
     return output_path
 
 def output_all(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_AllProjects_slide(df, prs)
     pu.create_ProjectOwner_slides(df, prs)
     pu.create_Objective_slides(df, prs)
     pu.create_title_slide(prs, "Impacted Teams")
@@ -208,7 +209,7 @@ def output_all(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=co
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
     pu.create_OnHold_slides(df, prs)
     if save:
-        output_path = pu.save_exit(prs, folder = output_folder)
+        output_path = pu.save_exit(prs, report_type="PEA_Project_Report", folder = output_folder)
     return output_path
 
 ### DOCUMENT FUNCTIONS ###
@@ -220,7 +221,7 @@ def all_docs(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=con
     pu.create_document_release_section(df, prs, name_filter)
     output_path = ""
     if save:
-        output_path = pu.save_exit(prs, "_DocumentBoard", folder = output_folder)
+        output_path = pu.save_exit(prs, "PEA_Project_Report", "_DocumentBoard", folder = output_folder)
     return output_path
 
 def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
@@ -230,12 +231,12 @@ def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=
     pu.create_document_changes_section(df, prs)
     output_path = ""
     if save:
-        output_path = pu.save_exit(prs, "_DocumentChanges", folder = output_folder)
+        output_path = pu.save_exit(prs, "PEA_Project_Report", "_DocumentChanges", folder = output_folder)
     return output_path
 
 def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter='', save=True, prs=None, internal=False):
     df = du.create_blank_dataframe(project_csv)
-    save_tail = "_DocumentBoard"
+    save_tail = "_FullReleaseBoard"
     if filter:
         df = df.loc[df['Release Group'] == filter]   
         save_tail = "_"+filter
@@ -251,13 +252,13 @@ def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], outpu
         for imp in impacted:
             pu.create_document_Impacted_section(df, prs, no_section=False, impacted_team=imp, group_filter=filter)
     if save:
-        output_path = pu.save_exit(prs, save_tail, folder = output_folder)
+        output_path = pu.save_exit(prs, "PEA_Document_Release", save_tail, folder = output_folder)
 
     return output_path
 
 def release_board_slides_multi_filter(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter='[]', save=True, prs=None, internal=False):
     df = du.create_blank_dataframe(project_csv)
-    save_tail = "_DocumentBoard"
+    save_tail = "_FullReleaseBoard"
     if filter:
         df = df[df['Release Group'].isin(filter)]    
         save_tail = "_" + "And".join(filter)  # Assuming you want to concatenate filter names for the filename
@@ -273,7 +274,7 @@ def release_board_slides_multi_filter(project_csv=const.FILE_LOCATIONS['document
         for imp in impacted:
             pu.create_document_Impacted_section_multi_filter(df, prs, no_section=False, impacted_team=imp, group_filter=filter)
     if save:
-        output_path = pu.save_exit(prs, save_tail, folder = output_folder)
+        output_path = pu.save_exit(prs, "PEA_Document_Release", save_tail, folder = output_folder)
 
     return output_path
 
