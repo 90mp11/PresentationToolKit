@@ -1,151 +1,55 @@
 import argparse
 import os
-#import PresentationToolKit.utilities.data_utils as du
-#import PresentationToolKit.utilities.presentation_utils as pu
-#import PresentationToolKit.utilities.constants as const
-
 import utilities.data_utils as du
 import utilities.presentation_utils as pu
 import utilities.constants as const
 
-def main():
-    # Define command-line arguments
-    parser = argparse.ArgumentParser(description="Project Reporting tool developed by the Passive Engineering Team. For specific help, please contact Matt Proctor")
-    parser.add_argument( # --engineering
-        "--engineering",
-        action="store_true",
-        help="Create a batch of Presentations, one for each listed Team Member in the constants.py file",
-    )
-    parser.add_argument( # --impact
-        "--impact",
-        action="store_true",
-        help="Create individual presentations for each of the unique teams listed in the 'Impacted Teams' column",
-    )
-    parser.add_argument( # --allimpacted
-        "--allimpacted",
-        action="store_true",
-        help="Create single presentation to contain impacts against each of the unique teams listed in the 'Impacted Teams' column",
-    )
-    parser.add_argument( # --who
-        "--who",
-        action="store_true",
-        help="Creates a single presentation filtered based on user input to the 'Primary Owner' field - this works on incomplete names",
-    )
-    parser.add_argument( # --debug
-        "--debug",
-        action="store_true",
-        help="Used for testing / debug",
-    )
-    parser.add_argument( # --onhold
-        "--onhold",
-        action="store_true",
-        help="Exports all the on-hold projects to a single presentation",
-    )
-    parser.add_argument( # --objective
-        "--objective",
-        action="store_true",
-        help="Exports the Objective view into a single presentation",
-    )
-    parser.add_argument( # --projects
-        "--projects",
-        action="store_true",
-        help="Exports the Objective view into a single presentation",
-    )
-    parser.add_argument( # --docs
-        "--docs",
-        action="store_true",
-        help="Imports the Document Change Log and outputs the Monthly Release Board slides",
-    )
-    parser.add_argument( # --document_changes
-        "--document_changes",
-        action="store_true",
-        help="Exports the Document Changes view into a single presentation",
-    )
-    parser.add_argument( # --output_all
-        "--output_all",
-        action="store_true",
-        help="Exports the Standard Output Report in a single presentation",
-    )
-    parser.add_argument( # --release
-        "--release",
-        action="store_true",
-        help="Outputs the ReleaseBoard Impact Report in a single presentation",
-    )
-    parser.add_argument( # --internal
-        "--internal",
-        action="store_true",
-        help="Sets a flag for Internal use only - Outputs the ReleaseBoard Impact Report in a single presentation",
-    )
+def engineering_presentation():
+    for eng in const.ENGINEERS:
+        person_filter(person=eng)
 
-    # Parse the command-line 
-    args = parser.parse_args()
+def impact_presentation():
+    impact_filter = input("Impacted Area: ")
+    impact_slides(filter=impact_filter)
 
-    done_test=0
-    internal = False
+def allimpacted_presentation():
+    allimpacted()
 
-    # Determine which commands to execute based on the command-line arguments
-    if args.internal:
-        internal = True
-    if args.engineering:
-        for eng in const.ENGINEERS:
-            person_filter(person=eng)
-        done_test=1
-    if args.who:
-        name_filter = input("Name: ")
-        person_filter(person=name_filter)
-        done_test=1
-    if args.impact:
-        impact_filter = input("Impacted Area: ")
-        impact_slides(filter=impact_filter)
-        done_test=1
-    if args.allimpacted:
-        allimpacted()
-        done_test=1
-    if args.objective:
-        objective()
-        done_test=1
-    if args.onhold:
-        df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
-        pu.create_OnHold_slides(df, prs, no_section=True)
-        pu.save_exit(prs, "PEA_Project_Report", "_OnHold", const.FILE_LOCATIONS['output_folder'])
-        done_test=1
-    if args.projects:
-        df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
-        pu.create_project_section(df, prs)
-        pu.save_exit(prs, "PEA_Project_Report", "_Projects", const.FILE_LOCATIONS['output_folder'])
-        done_test=1
-    if args.docs:
-        name_filter = input("Date: ")
-        all_docs(name_filter=name_filter)
-        done_test=1
-    if args.document_changes:
-        doc_changes(const.FILE_LOCATIONS['document_csv'], const.FILE_LOCATIONS['output_folder'])
-        done_test=1
-    if args.debug:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
-        slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[7]) #Doc Release Board Template
-        pu.placeholder_identifier(slide)
-        done_test=1
-    if args.output_all:
-        output_all()
-        done_test=1
-    if args.release:
-        release_filter = input("Release Group: ")
-        if release_filter == "BDUK":
-            release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal)
-        else:
-            release_board_slides(filter=release_filter, internal=internal)
-        done_test=1
+def who_presentation():
+    name_filter = input("Name: ")
+    person_filter(person=name_filter)
 
-        # TODO - change filename to "Document", change template title to "Document", add filter so only External Review is selected for External Report
+def onhold_presentation():
+    df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_OnHold_slides(df, prs, no_section=True)
+    pu.save_exit(prs, "PEA_Project_Report", "_OnHold", const.FILE_LOCATIONS['output_folder'])
 
-    if done_test == 0:
-        output_all()
-    exit(1)
+def objective_presentation():
+    objective()
 
-### PROJECT BOARD FUNCTIONS ###
+def projects_presentation():
+    df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
+    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    pu.create_project_section(df, prs)
+    pu.save_exit(prs, "PEA_Project_Report", "_Projects", const.FILE_LOCATIONS['output_folder'])
+
+def docs_presentation():
+    name_filter = input("Date: ")
+    all_docs(name_filter=name_filter)
+
+def document_changes_presentation():
+    doc_changes(const.FILE_LOCATIONS['document_csv'], const.FILE_LOCATIONS['output_folder'])
+
+def output_all_presentation():
+    output_all()
+
+def release_presentation():
+    release_filter = input("Release Group: ")
+    if release_filter == "BDUK":
+        release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"])
+    else:
+        release_board_slides(filter=release_filter)
 
 def person_filter(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], person='Matt', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
@@ -212,8 +116,6 @@ def output_all(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=co
         output_path = pu.save_exit(prs, report_type="PEA_Project_Report", folder = output_folder)
     return output_path
 
-### DOCUMENT FUNCTIONS ###
-
 def all_docs(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], name_filter='', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
@@ -278,8 +180,6 @@ def release_board_slides_multi_filter(project_csv=const.FILE_LOCATIONS['document
 
     return output_path
 
-### SETUP FUNCTIONS ###
-
 def create_folders(folder_names=['output', 'raw', 'templates', 'utilities']):
     for folder_name in folder_names:
         # Construct the path for the folder
@@ -291,7 +191,48 @@ def create_folders(folder_names=['output', 'raw', 'templates', 'utilities']):
             os.mkdir(path)
             print(f"Created missing folder: {path}")
 
-### NAME==MAIN ###
+def main():
+    parser = argparse.ArgumentParser(description="Project Reporting tool developed by the Passive Engineering Team.")
+    parser.add_argument("--engineering", action="store_true", help="Create a batch of Presentations, one for each listed Team Member in the constants.py file")
+    parser.add_argument("--impact", action="store_true", help="Create individual presentations for each of the unique teams listed in the 'Impacted Teams' column")
+    parser.add_argument("--allimpacted", action="store_true", help="Create single presentation to contain impacts against each of the unique teams listed in the 'Impacted Teams' column")
+    parser.add_argument("--who", action="store_true", help="Creates a single presentation filtered based on user input to the 'Primary Owner' field - this works on incomplete names")
+    parser.add_argument("--debug", action="store_true", help="Used for testing / debug")
+    parser.add_argument("--onhold", action="store_true", help="Exports all the on-hold projects to a single presentation")
+    parser.add_argument("--objective", action="store_true", help="Exports the Objective view into a single presentation")
+    parser.add_argument("--projects", action="store_true", help="Exports the Objective view into a single presentation")
+    parser.add_argument("--docs", action="store_true", help="Imports the Document Change Log and outputs the Monthly Release Board slides")
+    parser.add_argument("--document_changes", action="store_true", help="Exports the Document Changes view into a single presentation")
+    parser.add_argument("--output_all", action="store_true", help="Exports the Standard Output Report in a single presentation")
+    parser.add_argument("--release", action="store_true", help="Outputs the ReleaseBoard Impact Report in a single presentation")
+    parser.add_argument("--internal", action="store_true", help="Sets a flag for Internal use only - Outputs the ReleaseBoard Impact Report in a single presentation")
+
+    args = parser.parse_args()
+    internal = args.internal
+
+    if args.engineering:
+        engineering_presentation()
+    if args.who:
+        who_presentation()
+    if args.impact:
+        impact_presentation()
+    if args.allimpacted:
+        allimpacted_presentation()
+    if args.objective:
+        objective_presentation()
+    if args.onhold:
+        onhold_presentation()
+    if args.projects:
+        projects_presentation()
+    if args.docs:
+        docs_presentation()
+    if args.document_changes:
+        document_changes_presentation()
+    if args.output_all:
+        output_all_presentation()
+    if args.release:
+        release_presentation()
+
 if __name__ == "__main__":
     create_folders()
     main()
