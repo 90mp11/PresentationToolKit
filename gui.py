@@ -15,11 +15,16 @@ class ToolTip:
         self.tooltip_window = None
 
     def enter(self, event=None):
-        self.tooltip_window = tk.Toplevel(self.widget)
-        self.tooltip_window.wm_overrideredirect(True)
-        self.tooltip_window.geometry(f"+{self.widget.winfo_rootx() + 20}+{self.widget.winfo_rooty() + 20}")
-        label = tk.Label(self.tooltip_window, text=self.text, background="#2c3e50", foreground="#ecf0f1", relief="solid", borderwidth=1, font=("Roboto", 10))
-        label.pack()
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 25
+        self.tooltip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = tk.Label(tw, text=self.text, justify='left',
+                         background="#2c3e50", foreground="#ecf0f1", relief='solid', borderwidth=1,
+                         font=("Roboto", 10))
+        label.pack(ipadx=1)
 
     def leave(self, event=None):
         if self.tooltip_window:
@@ -45,7 +50,6 @@ class Application(tk.Frame):
         style.configure('TLabel', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
         style.configure('TButton', font=('Roboto', 12), padding=10, background='#3498db', foreground='white', borderwidth=0)
         style.configure('TCheckbutton', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
-        style.configure('TLabelFrame', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
         style.configure('TCombobox', font=('Roboto', 12))
         style.map('TButton', background=[('active', '#2980b9'), ('pressed', '#1abc9c')])
 
@@ -64,14 +68,14 @@ class Application(tk.Frame):
         self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10)
 
         # Options frame (initially hidden)
-        self.options_frame = ttk.LabelFrame(self.main_frame, text="", padding="10 10 10 10", labelanchor='n', style="Custom.TLabelframe")
-        self.options_frame.grid(row=1, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
-        self.options_frame.columnconfigure(0, weight=1)
-        self.options_frame.grid_remove()
+        self.options_container = tk.Frame(self.main_frame, bg="#2c3e50", padx=10, pady=10)
+        self.options_container.grid(row=1, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
+        self.options_container.columnconfigure(0, weight=1)
+        self.options_container.grid_remove()
 
-        # Remove redundant label if any
-        # self.options_label = ttk.Label(self.options_frame, text="Options", font=self.heading_font, background='#2c3e50', foreground='#ecf0f1')
-        # self.options_label.grid(row=0, column=0, pady=10)
+        # Options label
+        self.options_label = tk.Label(self.options_container, text="Options", font=self.heading_font, bg="#2c3e50", fg="#ecf0f1")
+        self.options_label.grid(row=0, column=0, pady=10)
 
         self.option_vars = {}
         self.options = []
@@ -100,7 +104,7 @@ class Application(tk.Frame):
                     self.display_document_options()
                 else:
                     messagebox.showerror("Error", "Unknown file type")
-                self.options_frame.grid()  # Show options frame after CSV upload
+                self.options_container.grid()  # Show options frame after CSV upload
             except Exception as e:
                 messagebox.showerror("Error", str(e))
         else:
@@ -121,16 +125,16 @@ class Application(tk.Frame):
         ]
         for i, (text, mode, tooltip) in enumerate(project_options):
             var = tk.BooleanVar(value=False)
-            cb = ttk.Checkbutton(self.options_frame, text=text, variable=var)
+            cb = ttk.Checkbutton(self.options_container, text=text, variable=var)
             cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.option_vars[mode] = var
             self.options.append(cb)
             ToolTip(cb, tooltip)
 
         # Add dropdown for Release Group
-        self.release_group_label = ttk.Label(self.options_frame, text="Release Group", background='#2c3e50', foreground='#ecf0f1')
+        self.release_group_label = tk.Label(self.options_container, text="Release Group", bg='#2c3e50', fg='#ecf0f1')
         self.release_group_label.grid(row=len(project_options)+1, column=0, padx=10, pady=5, sticky=tk.W)
-        self.release_group_combobox = ttk.Combobox(self.options_frame, textvariable=self.release_group_var, state="readonly")
+        self.release_group_combobox = ttk.Combobox(self.options_container, textvariable=self.release_group_var, state="readonly")
         self.release_group_combobox.grid(row=len(project_options)+2, column=0, padx=10, pady=5, sticky=tk.W)
         self.update_release_group_combobox()
 
@@ -143,16 +147,16 @@ class Application(tk.Frame):
         ]
         for i, (text, mode, tooltip) in enumerate(document_options):
             var = tk.BooleanVar(value=False)
-            cb = ttk.Checkbutton(self.options_frame, text=text, variable=var)
+            cb = ttk.Checkbutton(self.options_container, text=text, variable=var)
             cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.option_vars[mode] = var
             self.options.append(cb)
             ToolTip(cb, tooltip)
 
         # Add dropdown for Release Group
-        self.release_group_label = ttk.Label(self.options_frame, text="Release Group", background='#2c3e50', foreground='#ecf0f1')
+        self.release_group_label = tk.Label(self.options_container, text="Release Group", bg='#2c3e50', fg='#ecf0f1')
         self.release_group_label.grid(row=len(document_options)+1, column=0, padx=10, pady=5, sticky=tk.W)
-        self.release_group_combobox = ttk.Combobox(self.options_frame, textvariable=self.release_group_var, state="readonly")
+        self.release_group_combobox = ttk.Combobox(self.options_container, textvariable=self.release_group_var, state="readonly")
         self.release_group_combobox.grid(row=len(document_options)+2, column=0, padx=10, pady=5, sticky=tk.W)
         self.update_release_group_combobox()
 
@@ -220,6 +224,5 @@ root.geometry('600x500')  # Set window size
 root.configure(bg='#2c3e50')  # Set background color
 style = ttk.Style(root)
 style.theme_use('clam')
-style.configure("Custom.TLabelframe", background="#2c3e50", foreground="#ecf0f1")
 app = Application(master=root)
 app.mainloop()
