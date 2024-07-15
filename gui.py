@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import os
 import main
@@ -9,24 +9,27 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.pack()
+        self.pack(padx=10, pady=10)
         self.create_widgets()
 
     def create_widgets(self):
-        self.upload_btn = tk.Button(self, text="Upload CSV", command=self.upload_file)
-        self.upload_btn.pack(side="top")
+        self.upload_frame = ttk.Frame(self)
+        self.upload_frame.pack(pady=10)
 
-        self.options_frame = tk.Frame(self)
-        self.options_frame.pack(side="top", fill="x", pady=10)
+        self.upload_btn = ttk.Button(self.upload_frame, text="Upload CSV", command=self.upload_file)
+        self.upload_btn.pack(pady=5)
+
+        self.options_frame = ttk.LabelFrame(self, text="Options")
+        self.options_frame.pack(pady=10, fill="both", expand="yes")
 
         self.option_var = tk.StringVar(value="none")
         self.options = []
 
-        self.process_btn = tk.Button(self, text="Process", command=self.process_file)
-        self.process_btn.pack(side="top", pady=10)
+        self.process_btn = ttk.Button(self, text="Process", command=self.process_file)
+        self.process_btn.pack(pady=5)
 
-        self.quit = tk.Button(self, text="QUIT", fg="red", command=self.master.destroy)
-        self.quit.pack(side="bottom")
+        self.quit = ttk.Button(self, text="QUIT", command=self.master.destroy)
+        self.quit.pack(pady=5)
 
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
@@ -58,8 +61,8 @@ class Application(tk.Frame):
             ("Release", "release")
         ]
         for text, mode in project_options:
-            b = tk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.pack(anchor="w")
+            b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
+            b.pack(anchor="w", padx=10, pady=2)
             self.options.append(b)
 
     def display_document_options(self):
@@ -70,8 +73,8 @@ class Application(tk.Frame):
             ("Release", "release")
         ]
         for text, mode in document_options:
-            b = tk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.pack(anchor="w")
+            b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
+            b.pack(anchor="w", padx=10, pady=2)
             self.options.append(b)
 
     def clear_options(self):
@@ -118,5 +121,8 @@ class Application(tk.Frame):
             messagebox.showerror("Error", str(e))
 
 root = tk.Tk()
+root.title("CSV Processing Tool")
+style = ttk.Style(root)
+style.theme_use('clam')
 app = Application(master=root)
 app.mainloop()
