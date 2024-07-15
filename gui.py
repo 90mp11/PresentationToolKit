@@ -9,27 +9,45 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.pack(padx=10, pady=10)
+        self.master.title("CSV Processing Tool")
         self.create_widgets()
 
     def create_widgets(self):
-        self.upload_frame = ttk.Frame(self)
-        self.upload_frame.pack(pady=10)
+        # Set the style
+        style = ttk.Style(self.master)
+        style.theme_use('clam')
+        style.configure('TFrame', background='#f0f0f0')
+        style.configure('TLabel', background='#f0f0f0', font=('Arial', 12))
+        style.configure('TButton', font=('Arial', 12), padding=10)
+        style.configure('TRadiobutton', background='#f0f0f0', font=('Arial', 12))
+        style.map('TButton', background=[('active', '#e0e0e0')])
 
-        self.upload_btn = ttk.Button(self.upload_frame, text="Upload CSV", command=self.upload_file)
-        self.upload_btn.pack(pady=5)
+        # Main frame
+        self.main_frame = ttk.Frame(self.master, padding="20 20 20 20")
+        self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.rowconfigure(0, weight=1)
 
-        self.options_frame = ttk.LabelFrame(self, text="Options")
-        self.options_frame.pack(pady=10, fill="both", expand="yes")
+        # Upload button
+        self.upload_btn = ttk.Button(self.main_frame, text="Upload CSV", command=self.upload_file)
+        self.upload_btn.grid(row=0, column=0, pady=10)
+
+        # Options frame
+        self.options_frame = ttk.LabelFrame(self.main_frame, text="Options", padding="10 10 10 10")
+        self.options_frame.grid(row=1, column=0, pady=10, sticky=(tk.W, tk.E))
 
         self.option_var = tk.StringVar(value="none")
         self.options = []
 
-        self.process_btn = ttk.Button(self, text="Process", command=self.process_file)
-        self.process_btn.pack(pady=5)
+        # Process and Quit buttons frame
+        self.buttons_frame = ttk.Frame(self.main_frame, padding="10 10 10 10")
+        self.buttons_frame.grid(row=2, column=0, pady=10, sticky=(tk.W, tk.E))
 
-        self.quit = ttk.Button(self, text="QUIT", command=self.master.destroy)
-        self.quit.pack(pady=5)
+        self.process_btn = ttk.Button(self.buttons_frame, text="Process", command=self.process_file)
+        self.process_btn.grid(row=0, column=0, padx=5)
+
+        self.quit_btn = ttk.Button(self.buttons_frame, text="QUIT", command=self.master.destroy)
+        self.quit_btn.grid(row=0, column=1, padx=5)
 
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
@@ -86,7 +104,7 @@ class Application(tk.Frame):
         if not hasattr(self, 'file_path') or not self.file_path:
             messagebox.showerror("Error", "Please upload a CSV file first")
             return
-        
+
         try:
             df = pd.read_csv(self.file_path)
             const.FILE_LOCATIONS['project_csv'] = self.file_path  # Update the path in constants
@@ -122,6 +140,7 @@ class Application(tk.Frame):
 
 root = tk.Tk()
 root.title("CSV Processing Tool")
+root.geometry('400x400')  # Set window size
 style = ttk.Style(root)
 style.theme_use('clam')
 app = Application(master=root)
