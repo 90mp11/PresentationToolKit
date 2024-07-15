@@ -10,6 +10,7 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.master.title("CSV Processing Tool")
+        self.master.geometry('500x500')
         self.create_widgets()
 
     def create_widgets(self):
@@ -30,24 +31,26 @@ class Application(tk.Frame):
 
         # Upload button
         self.upload_btn = ttk.Button(self.main_frame, text="Upload CSV", command=self.upload_file)
-        self.upload_btn.grid(row=0, column=0, pady=10)
+        self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10)
 
         # Options frame
         self.options_frame = ttk.LabelFrame(self.main_frame, text="Options", padding="10 10 10 10")
-        self.options_frame.grid(row=1, column=0, pady=10, sticky=(tk.W, tk.E))
+        self.options_frame.grid(row=1, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
+        self.options_frame.columnconfigure(0, weight=1)
 
         self.option_var = tk.StringVar(value="none")
         self.options = []
 
         # Process and Quit buttons frame
         self.buttons_frame = ttk.Frame(self.main_frame, padding="10 10 10 10")
-        self.buttons_frame.grid(row=2, column=0, pady=10, sticky=(tk.W, tk.E))
-
+        self.buttons_frame.grid(row=2, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
+        self.buttons_frame.columnconfigure(0, weight=1)
+        
         self.process_btn = ttk.Button(self.buttons_frame, text="Process", command=self.process_file)
-        self.process_btn.grid(row=0, column=0, padx=5)
+        self.process_btn.grid(row=0, column=0, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
 
         self.quit_btn = ttk.Button(self.buttons_frame, text="QUIT", command=self.master.destroy)
-        self.quit_btn.grid(row=0, column=1, padx=5)
+        self.quit_btn.grid(row=0, column=1, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
 
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
@@ -80,7 +83,7 @@ class Application(tk.Frame):
         ]
         for text, mode in project_options:
             b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.pack(anchor="w", padx=10, pady=2)
+            b.pack(anchor="w", padx=10, pady=5)
             self.options.append(b)
 
     def display_document_options(self):
@@ -92,7 +95,7 @@ class Application(tk.Frame):
         ]
         for text, mode in document_options:
             b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.pack(anchor="w", padx=10, pady=2)
+            b.pack(anchor="w", padx=10, pady=5)
             self.options.append(b)
 
     def clear_options(self):
@@ -140,7 +143,7 @@ class Application(tk.Frame):
 
 root = tk.Tk()
 root.title("CSV Processing Tool")
-root.geometry('400x400')  # Set window size
+root.geometry('500x500')  # Set window size
 style = ttk.Style(root)
 style.theme_use('clam')
 app = Application(master=root)
