@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from tkinter.font import Font
 import pandas as pd
 import os
 import main
@@ -10,18 +11,26 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.master.title("CSV Processing Tool")
-        self.master.geometry('500x500')
+        self.master.geometry('600x500')
         self.create_widgets()
 
     def create_widgets(self):
         # Set the style
         style = ttk.Style(self.master)
         style.theme_use('clam')
-        style.configure('TFrame', background='#f0f0f0')
-        style.configure('TLabel', background='#f0f0f0', font=('Arial', 12))
-        style.configure('TButton', font=('Arial', 12), padding=10)
-        style.configure('TRadiobutton', background='#f0f0f0', font=('Arial', 12))
-        style.map('TButton', background=[('active', '#e0e0e0')])
+
+        # Modern color palette
+        self.master.configure(bg='#2c3e50')
+        style.configure('TFrame', background='#2c3e50')
+        style.configure('TLabel', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
+        style.configure('TButton', font=('Roboto', 12), padding=10, background='#3498db', foreground='white', borderwidth=0)
+        style.configure('TRadiobutton', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
+        style.configure('TLabelFrame', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
+        style.map('TButton', background=[('active', '#2980b9'), ('pressed', '#1abc9c')])
+
+        # Custom font
+        self.heading_font = Font(family="Roboto", size=14)
+        self.default_font = Font(family="Roboto", size=12)
 
         # Main frame
         self.main_frame = ttk.Frame(self.master, padding="20 20 20 20")
@@ -33,10 +42,15 @@ class Application(tk.Frame):
         self.upload_btn = ttk.Button(self.main_frame, text="Upload CSV", command=self.upload_file)
         self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10)
 
-        # Options frame
-        self.options_frame = ttk.LabelFrame(self.main_frame, text="Options", padding="10 10 10 10")
+        # Options frame (initially hidden)
+        self.options_frame = ttk.LabelFrame(self.main_frame, text="Options", padding="10 10 10 10", labelanchor='n')
         self.options_frame.grid(row=1, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
         self.options_frame.columnconfigure(0, weight=1)
+        self.options_frame.grid_remove()
+
+        # Section header
+        self.options_label = ttk.Label(self.options_frame, text="Options", font=self.heading_font, background='#2c3e50', foreground='#ecf0f1')
+        self.options_label.grid(row=0, column=0, pady=10)
 
         self.option_var = tk.StringVar(value="none")
         self.options = []
@@ -45,7 +59,7 @@ class Application(tk.Frame):
         self.buttons_frame = ttk.Frame(self.main_frame, padding="10 10 10 10")
         self.buttons_frame.grid(row=2, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
         self.buttons_frame.columnconfigure(0, weight=1)
-        
+
         self.process_btn = ttk.Button(self.buttons_frame, text="Process", command=self.process_file)
         self.process_btn.grid(row=0, column=0, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
 
@@ -63,6 +77,7 @@ class Application(tk.Frame):
                     self.display_document_options()
                 else:
                     messagebox.showerror("Error", "Unknown file type")
+                self.options_frame.grid()  # Show options frame after CSV upload
             except Exception as e:
                 messagebox.showerror("Error", str(e))
         else:
@@ -81,9 +96,9 @@ class Application(tk.Frame):
             ("Output All", "output_all"),
             ("Release", "release")
         ]
-        for text, mode in project_options:
+        for i, (text, mode) in enumerate(project_options):
             b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.pack(anchor="w", padx=10, pady=5)
+            b.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.options.append(b)
 
     def display_document_options(self):
@@ -93,14 +108,14 @@ class Application(tk.Frame):
             ("Document Changes", "document_changes"),
             ("Release", "release")
         ]
-        for text, mode in document_options:
+        for i, (text, mode) in enumerate(document_options):
             b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.pack(anchor="w", padx=10, pady=5)
+            b.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.options.append(b)
 
     def clear_options(self):
         for option in self.options:
-            option.destroy()
+            option.grid_forget()
         self.options.clear()
 
     def process_file(self):
@@ -143,7 +158,8 @@ class Application(tk.Frame):
 
 root = tk.Tk()
 root.title("CSV Processing Tool")
-root.geometry('500x500')  # Set window size
+root.geometry('600x500')  # Set window size
+root.configure(bg='#2c3e50')  # Set background color
 style = ttk.Style(root)
 style.theme_use('clam')
 app = Application(master=root)
