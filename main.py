@@ -8,15 +8,17 @@ def engineering_presentation():
     for eng in const.ENGINEERS:
         person_filter(person=eng)
 
-def impact_presentation():
-    impact_filter = input("Impacted Area: ")
+def impact_presentation(impact_filter=None):
+    if not impact_filter:
+        impact_filter = input("Impacted Area: ")
     impact_slides(filter=impact_filter)
 
 def allimpacted_presentation():
     allimpacted()
 
-def who_presentation():
-    name_filter = input("Name: ")
+def who_presentation(name_filter=None):
+    if not name_filter:
+        name_filter = input("Name: ")
     person_filter(person=name_filter)
 
 def onhold_presentation():
@@ -34,9 +36,10 @@ def projects_presentation():
     pu.create_project_section(df, prs)
     pu.save_exit(prs, "PEA_Project_Report", "_Projects", const.FILE_LOCATIONS['output_folder'])
 
-def docs_presentation():
-    name_filter = input("Date: ")
-    all_docs(name_filter=name_filter)
+def docs_presentation(date_filter=None):
+    if not date_filter:
+        date_filter = input("Date: ")
+    all_docs(name_filter=date_filter)
 
 def document_changes_presentation():
     doc_changes(const.FILE_LOCATIONS['document_csv'], const.FILE_LOCATIONS['output_folder'])
@@ -44,12 +47,13 @@ def document_changes_presentation():
 def output_all_presentation():
     output_all()
 
-def release_presentation():
-    release_filter = input("Release Group: ")
-    if release_filter == "BDUK":
+def release_presentation(release_group=None):
+    if not release_group:
+        release_group = input("Release Group: ")
+    if release_group == "BDUK":
         release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"])
     else:
-        release_board_slides(filter=release_filter)
+        release_board_slides(filter=release_group)
 
 def person_filter(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], person='Matt', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)

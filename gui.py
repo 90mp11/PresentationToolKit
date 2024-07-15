@@ -6,6 +6,26 @@ import os
 import main
 import utilities.constants as const
 
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.leave)
+        self.tooltip_window = None
+
+    def enter(self, event=None):
+        self.tooltip_window = tk.Toplevel(self.widget)
+        self.tooltip_window.wm_overrideredirect(True)
+        self.tooltip_window.geometry(f"+{self.widget.winfo_rootx() + 20}+{self.widget.winfo_rooty() + 20}")
+        label = tk.Label(self.tooltip_window, text=self.text, background="#2c3e50", foreground="#ecf0f1", relief="solid", borderwidth=1, font=("Roboto", 10))
+        label.pack()
+
+    def leave(self, event=None):
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+        self.tooltip_window = None
+
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -24,8 +44,9 @@ class Application(tk.Frame):
         style.configure('TFrame', background='#2c3e50')
         style.configure('TLabel', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
         style.configure('TButton', font=('Roboto', 12), padding=10, background='#3498db', foreground='white', borderwidth=0)
-        style.configure('TRadiobutton', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
+        style.configure('TCheckbutton', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
         style.configure('TLabelFrame', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
+        style.configure('TCombobox', font=('Roboto', 12))
         style.map('TButton', background=[('active', '#2980b9'), ('pressed', '#1abc9c')])
 
         # Custom font
@@ -43,17 +64,19 @@ class Application(tk.Frame):
         self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10)
 
         # Options frame (initially hidden)
-        self.options_frame = ttk.LabelFrame(self.main_frame, text="Options", padding="10 10 10 10", labelanchor='n')
+        self.options_frame = ttk.LabelFrame(self.main_frame, text="", padding="10 10 10 10", labelanchor='n', style="Custom.TLabelframe")
         self.options_frame.grid(row=1, column=0, pady=20, padx=20, sticky=(tk.W, tk.E))
         self.options_frame.columnconfigure(0, weight=1)
         self.options_frame.grid_remove()
 
-        # Section header
-        self.options_label = ttk.Label(self.options_frame, text="Options", font=self.heading_font, background='#2c3e50', foreground='#ecf0f1')
-        self.options_label.grid(row=0, column=0, pady=10)
+        # Remove redundant label if any
+        # self.options_label = ttk.Label(self.options_frame, text="Options", font=self.heading_font, background='#2c3e50', foreground='#ecf0f1')
+        # self.options_label.grid(row=0, column=0, pady=10)
 
-        self.option_var = tk.StringVar(value="none")
+        self.option_vars = {}
         self.options = []
+        self.release_group_var = tk.StringVar()
+        self.release_group_combobox = None
 
         # Process and Quit buttons frame
         self.buttons_frame = ttk.Frame(self.main_frame, padding="10 10 10 10")
@@ -86,37 +109,70 @@ class Application(tk.Frame):
     def display_project_options(self):
         self.clear_options()
         project_options = [
-            ("Engineering", "engineering"),
-            ("Impact", "impact"),
-            ("All Impacted", "allimpacted"),
-            ("Who", "who"),
-            ("On Hold", "onhold"),
-            ("Objective", "objective"),
-            ("Projects", "projects"),
-            ("Output All", "output_all"),
-            ("Release", "release")
+            ("Engineering", "engineering", "Generate engineering report"),
+            ("Impact", "impact", "Generate impact report"),
+            ("All Impacted", "allimpacted", "Generate all impacted report"),
+            ("Who", "who", "Generate 'who' report"),
+            ("On Hold", "onhold", "Generate on-hold projects report"),
+            ("Objective", "objective", "Generate objective report"),
+            ("Projects", "projects", "Generate projects report"),
+            ("Output All", "output_all", "Generate all output report"),
+            ("Release", "release", "Generate release report with additional input")
         ]
-        for i, (text, mode) in enumerate(project_options):
-            b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
-            self.options.append(b)
+        for i, (text, mode, tooltip) in enumerate(project_options):
+            var = tk.BooleanVar(value=False)
+            cb = ttk.Checkbutton(self.options_frame, text=text, variable=var)
+            cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
+            self.option_vars[mode] = var
+            self.options.append(cb)
+            ToolTip(cb, tooltip)
+
+        # Add dropdown for Release Group
+        self.release_group_label = ttk.Label(self.options_frame, text="Release Group", background='#2c3e50', foreground='#ecf0f1')
+        self.release_group_label.grid(row=len(project_options)+1, column=0, padx=10, pady=5, sticky=tk.W)
+        self.release_group_combobox = ttk.Combobox(self.options_frame, textvariable=self.release_group_var, state="readonly")
+        self.release_group_combobox.grid(row=len(project_options)+2, column=0, padx=10, pady=5, sticky=tk.W)
+        self.update_release_group_combobox()
 
     def display_document_options(self):
         self.clear_options()
         document_options = [
-            ("Docs", "docs"),
-            ("Document Changes", "document_changes"),
-            ("Release", "release")
+            ("Docs", "docs", "Generate documents report"),
+            ("Document Changes", "document_changes", "Generate document changes report"),
+            ("Release", "release", "Generate release report with additional input")
         ]
-        for i, (text, mode) in enumerate(document_options):
-            b = ttk.Radiobutton(self.options_frame, text=text, variable=self.option_var, value=mode)
-            b.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
-            self.options.append(b)
+        for i, (text, mode, tooltip) in enumerate(document_options):
+            var = tk.BooleanVar(value=False)
+            cb = ttk.Checkbutton(self.options_frame, text=text, variable=var)
+            cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
+            self.option_vars[mode] = var
+            self.options.append(cb)
+            ToolTip(cb, tooltip)
+
+        # Add dropdown for Release Group
+        self.release_group_label = ttk.Label(self.options_frame, text="Release Group", background='#2c3e50', foreground='#ecf0f1')
+        self.release_group_label.grid(row=len(document_options)+1, column=0, padx=10, pady=5, sticky=tk.W)
+        self.release_group_combobox = ttk.Combobox(self.options_frame, textvariable=self.release_group_var, state="readonly")
+        self.release_group_combobox.grid(row=len(document_options)+2, column=0, padx=10, pady=5, sticky=tk.W)
+        self.update_release_group_combobox()
+
+    def update_release_group_combobox(self):
+        # Assuming the CSV contains a column 'Release Group' with the relevant values
+        try:
+            df = pd.read_csv(self.file_path)
+            release_groups = df['Release Group'].dropna().unique().tolist()
+            self.release_group_combobox['values'] = release_groups
+        except Exception as e:
+            messagebox.showerror("Error", f"Error loading release groups: {e}")
 
     def clear_options(self):
         for option in self.options:
             option.grid_forget()
         self.options.clear()
+        if self.release_group_combobox:
+            self.release_group_combobox.grid_forget()
+            self.release_group_label.grid_forget()
+        self.option_vars.clear()
 
     def process_file(self):
         if not hasattr(self, 'file_path') or not self.file_path:
@@ -127,32 +183,34 @@ class Application(tk.Frame):
             df = pd.read_csv(self.file_path)
             const.FILE_LOCATIONS['project_csv'] = self.file_path  # Update the path in constants
             const.FILE_LOCATIONS['document_csv'] = self.file_path  # Update the path in constants
-            option = self.option_var.get()
 
-            if option == "engineering":
+            if self.option_vars.get('engineering', tk.BooleanVar(value=False)).get():
                 main.engineering_presentation()
-            elif option == "impact":
+            if self.option_vars.get('impact', tk.BooleanVar(value=False)).get():
                 main.impact_presentation()
-            elif option == "allimpacted":
+            if self.option_vars.get('allimpacted', tk.BooleanVar(value=False)).get():
                 main.allimpacted_presentation()
-            elif option == "who":
+            if self.option_vars.get('who', tk.BooleanVar(value=False)).get():
                 main.who_presentation()
-            elif option == "onhold":
+            if self.option_vars.get('onhold', tk.BooleanVar(value=False)).get():
                 main.onhold_presentation()
-            elif option == "objective":
+            if self.option_vars.get('objective', tk.BooleanVar(value=False)).get():
                 main.objective_presentation()
-            elif option == "projects":
+            if self.option_vars.get('projects', tk.BooleanVar(value=False)).get():
                 main.projects_presentation()
-            elif option == "docs":
-                main.docs_presentation()
-            elif option == "document_changes":
-                main.document_changes_presentation()
-            elif option == "output_all":
+            if self.option_vars.get('output_all', tk.BooleanVar(value=False)).get():
                 main.output_all_presentation()
-            elif option == "release":
-                main.release_presentation()
-            else:
-                messagebox.showerror("Error", "Please select an option to process the file")
+            if self.option_vars.get('release', tk.BooleanVar(value=False)).get():
+                release_group = self.release_group_var.get()
+                if release_group:
+                    main.release_presentation(release_group)  # Pass the release group as an argument
+                else:
+                    messagebox.showerror("Error", "Please select a release group for the release report")
+            if self.option_vars.get('docs', tk.BooleanVar(value=False)).get():
+                main.docs_presentation()
+            if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
+                main.document_changes_presentation()
+
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
@@ -162,5 +220,6 @@ root.geometry('600x500')  # Set window size
 root.configure(bg='#2c3e50')  # Set background color
 style = ttk.Style(root)
 style.theme_use('clam')
+style.configure("Custom.TLabelframe", background="#2c3e50", foreground="#ecf0f1")
 app = Application(master=root)
 app.mainloop()
