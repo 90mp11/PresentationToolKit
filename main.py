@@ -11,7 +11,11 @@ def engineering_presentation(project_csv, output_folder):
         person_filter(project_csv=project_csv, person=rtl, output_folder=output_folder)
 
 def impact_presentation(project_csv, impact_filter, output_folder):
-    impact_slides(project_csv=project_csv, filter=impact_filter, output_folder=output_folder)
+    if isinstance(impact_filter, list):
+        for filter_item in impact_filter:
+            impact_slides(project_csv=project_csv, filter=filter_item, output_folder=output_folder)
+    else:
+        impact_slides(project_csv=project_csv, filter=impact_filter, output_folder=output_folder)
 
 def allimpacted_presentation(project_csv, output_folder):
     allimpacted(project_csv=project_csv, output_folder=output_folder)

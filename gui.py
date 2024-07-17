@@ -252,51 +252,45 @@ class Application(tk.Frame):
 
         try:
             df = pd.read_csv(self.file_path)
-            const.FILE_LOCATIONS['project_csv'] = self.file_path
-            const.FILE_LOCATIONS['document_csv'] = self.file_path
+            const.FILE_LOCATIONS['project_csv'] = self.file_path  # Update the path in constants
+            const.FILE_LOCATIONS['document_csv'] = self.file_path  # Update the path in constants
 
-            # Retrieve the output folder path
-            output_folder = getattr(self, 'output_folder', const.FILE_LOCATIONS['output_folder'])
-            project_csv = const.FILE_LOCATIONS['project_csv']
-            document_csv = const.FILE_LOCATIONS['document_csv']
-
-            # Call the appropriate functions with the selected output folder
             if self.option_vars.get('engineering', tk.BooleanVar(value=False)).get():
-                main.engineering_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.engineering_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('impact', tk.BooleanVar(value=False)).get():
                 selected_impacted_areas = [area for area, var in self.impacted_areas_vars.items() if var.get()]
                 if selected_impacted_areas:
-                    main.impact_presentation(project_csv=project_csv, impact_filter=selected_impacted_areas, output_folder=output_folder)
+                    main.impact_presentation(self.file_path, selected_impacted_areas, self.output_folder)
                 else:
-                    main.allimpacted_presentation(project_csv=project_csv, output_folder=output_folder)
+                    main.allimpacted_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('allimpacted', tk.BooleanVar(value=False)).get():
-                main.allimpacted_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.allimpacted_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('who', tk.BooleanVar(value=False)).get():
-                main.who_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.who_presentation(self.file_path, None, self.output_folder)
             if self.option_vars.get('onhold', tk.BooleanVar(value=False)).get():
-                main.onhold_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.onhold_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('objective', tk.BooleanVar(value=False)).get():
-                main.objective_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.objective_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('projects', tk.BooleanVar(value=False)).get():
-                main.projects_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.projects_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('output_all', tk.BooleanVar(value=False)).get():
-                main.output_all_presentation(project_csv=project_csv, output_folder=output_folder)
+                main.output_all_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    main.release_presentation(document_csv=document_csv, release_group=release_group, output_folder=output_folder)
+                    main.release_presentation(release_group, self.output_folder)  # Pass the release group as an argument
                 else:
                     messagebox.showerror("Error", "Please select a release group for the release report")
             if self.option_vars.get('internal_release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    main.release_presentation(document_csv=document_csv, release_group=release_group, internal=True, output_folder=output_folder)
+                    main.release_presentation(release_group, self.output_folder, internal=True)  # Pass the release group and internal flag as arguments
                 else:
                     messagebox.showerror("Error", "Please select a release group for the internal release report")
             if self.option_vars.get('docs', tk.BooleanVar(value=False)).get():
-                main.docs_presentation(document_csv=document_csv, output_folder=output_folder)
+                main.docs_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
-                main.document_changes_presentation(document_csv=document_csv, output_folder=output_folder)
+                main.document_changes_presentation(self.file_path, self.output_folder)
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
