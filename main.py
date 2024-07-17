@@ -7,6 +7,8 @@ import utilities.constants as const
 def engineering_presentation():
     for eng in const.ENGINEERS:
         person_filter(person=eng)
+    for rtl in const.RTL:
+        person_filter(person=rtl)
 
 def impact_presentation(impact_filter=None):
     if not impact_filter:
