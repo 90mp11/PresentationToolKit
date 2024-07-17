@@ -47,13 +47,13 @@ def document_changes_presentation():
 def output_all_presentation():
     output_all()
 
-def release_presentation(release_group=None):
+def release_presentation(release_group=None, internal=False):
     if not release_group:
         release_group = input("Release Group: ")
     if release_group == "BDUK":
-        release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"])
+        release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal)
     else:
-        release_board_slides(filter=release_group)
+        release_board_slides(filter=release_group, internal=internal)
 
 def person_filter(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], person='Matt', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
@@ -147,6 +147,9 @@ def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], outpu
         df = df.loc[df['Release Group'] == filter]   
         save_tail = "_"+filter
     impacted = du.impacted_teams_list(df)
+
+    if internal:
+        save_tail = save_tail + "_internal"
 
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
