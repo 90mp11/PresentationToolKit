@@ -1,8 +1,8 @@
-import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
 import pandas as pd
+import os
 import main
 import utilities.constants as const
 
@@ -25,7 +25,6 @@ class ToolTip:
                          background="#2c3e50", foreground="#ecf0f1", relief='solid', borderwidth=1,
                          font=("Roboto", 10))
         label.pack(ipadx=1)
-        # Prevent the label from getting focus
         label.bind("<FocusIn>", lambda e: label.focus_set())
 
     def leave(self, event=None):
@@ -63,11 +62,9 @@ class Application(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        # Set the style
         style = ttk.Style(self.master)
         style.theme_use('clam')
 
-        # Modern color palette
         self.master.configure(bg='#2c3e50')
         style.configure('TFrame', background='#2c3e50')
         style.configure('TLabel', background='#2c3e50', foreground='#ecf0f1', font=('Roboto', 12))
@@ -80,11 +77,9 @@ class Application(tk.Frame):
                   foreground=[('active', '#ecf0f1'), ('selected', '#ecf0f1')],
                   indicatorcolor=[('selected', '#ecf0f1'), ('!selected', '#ecf0f1')])
 
-        # Custom font
         self.heading_font = Font(family="Roboto", size=14)
         self.default_font = Font(family="Roboto", size=12)
 
-        # Main frame with scrollbar
         self.canvas = tk.Canvas(self.master, bg='#2c3e50')
         self.scrollbar = ttk.Scrollbar(self.master, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas, padding="20 20 20 20")
@@ -102,17 +97,17 @@ class Application(tk.Frame):
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
 
-        # Upload button
         self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
         self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
-        # Options frame (initially hidden)
+        self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
+        self.select_folder_btn.grid(row=0, column=1, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
         self.options_container.grid(row=1, column=0, pady=20, padx=20, sticky=tk.W)
         self.options_container.columnconfigure(0, weight=1)
         self.options_container.grid_remove()
 
-        # Options label
         self.options_label = ttk.Label(self.options_container, text="Options", font=self.heading_font)
         self.options_label.grid(row=0, column=0, pady=10)
 
@@ -121,7 +116,6 @@ class Application(tk.Frame):
         self.release_group_var = tk.StringVar()
         self.release_group_combobox = None
 
-        # Impacted Areas container (initially hidden)
         self.impacted_areas_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
         self.impacted_areas_frame.grid(row=1, column=1, pady=20, padx=20, sticky=tk.NW)
         self.impacted_areas_frame.columnconfigure(0, weight=1)
@@ -136,7 +130,6 @@ class Application(tk.Frame):
         self.impacted_areas_vars = {}
         self.impacted_areas_checkbuttons = []
 
-        # Process and Quit buttons frame
         self.buttons_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
         self.buttons_frame.grid(row=2, column=0, pady=20, padx=20, sticky=tk.W)
         self.buttons_frame.columnconfigure(0, weight=1)
@@ -146,18 +139,6 @@ class Application(tk.Frame):
 
         self.quit_btn = ttk.Button(self.buttons_frame, text="QUIT", command=self.master.destroy)
         self.quit_btn.grid(row=0, column=1, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
-
-        # Folder selection button
-        self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
-        self.select_folder_btn.grid(row=0, column=1, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
-
-    def select_output_folder(self):
-        folder_selected = filedialog.askdirectory()
-        if folder_selected:
-            self.output_folder = folder_selected
-        else:
-            self.output_folder = os.path.join(os.path.expanduser("~"), 'Downloads')
-        const.FILE_LOCATIONS['output_folder'] = self.output_folder
 
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
@@ -173,6 +154,14 @@ class Application(tk.Frame):
                 self.options_container.grid()  # Show options frame after CSV upload
             except Exception as e:
                 messagebox.showerror("Error", str(e))
+
+    def select_output_folder(self):
+        folder_selected = filedialog.askdirectory()
+        if folder_selected:
+            self.output_folder = folder_selected
+        else:
+            self.output_folder = os.path.join(os.path.expanduser("~"), 'Downloads')
+        const.FILE_LOCATIONS['output_folder'] = self.output_folder
 
     def display_project_options(self):
         self.clear_options()
@@ -205,7 +194,6 @@ class Application(tk.Frame):
             self.options.append(cb)
             ToolTip(cb, tooltip)
 
-        # Add dropdown for Release Group
         self.release_group_label = ttk.Label(self.options_container, text="Release Group")
         self.release_group_label.grid(row=len(document_options)+1, column=0, padx=10, pady=5, sticky=tk.W)
         self.release_group_combobox = ttk.Combobox(self.options_container, textvariable=self.release_group_var, state="readonly")
@@ -213,7 +201,6 @@ class Application(tk.Frame):
         self.update_release_group_combobox()
 
     def update_release_group_combobox(self):
-        # Assuming the CSV contains a column 'Release Group' with the relevant values
         try:
             df = pd.read_csv(self.file_path)
             release_groups = df['Release Group'].dropna().unique().tolist()
@@ -263,60 +250,59 @@ class Application(tk.Frame):
             messagebox.showerror("Error", "Please upload a CSV file first")
             return
 
-        # Ensure output folder is set
-        if not hasattr(self, 'output_folder'):
-            self.output_folder = os.path.join(os.path.expanduser("~"), 'Downloads')
-        const.FILE_LOCATIONS['output_folder'] = self.output_folder
-
         try:
             df = pd.read_csv(self.file_path)
-            const.FILE_LOCATIONS['project_csv'] = self.file_path  # Update the path in constants
-            const.FILE_LOCATIONS['document_csv'] = self.file_path  # Update the path in constants
+            const.FILE_LOCATIONS['project_csv'] = self.file_path
+            const.FILE_LOCATIONS['document_csv'] = self.file_path
+
+            output_folder = getattr(self, 'output_folder', const.FILE_LOCATIONS['output_folder'])
+            project_csv = const.FILE_LOCATIONS['project_csv']
+            document_csv = const.FILE_LOCATIONS['document_csv']
 
             if self.option_vars.get('engineering', tk.BooleanVar(value=False)).get():
-                main.engineering_presentation()
+                main.engineering_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('impact', tk.BooleanVar(value=False)).get():
                 selected_impacted_areas = [area for area, var in self.impacted_areas_vars.items() if var.get()]
                 if selected_impacted_areas:
-                    main.impact_presentation(impact_filter=selected_impacted_areas)
+                    main.impact_presentation(project_csv=project_csv, impact_filter=selected_impacted_areas, output_folder=output_folder)
                 else:
-                    main.allimpacted_presentation()
+                    main.allimpacted_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('allimpacted', tk.BooleanVar(value=False)).get():
-                main.allimpacted_presentation()
+                main.allimpacted_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('who', tk.BooleanVar(value=False)).get():
-                main.who_presentation()
+                main.who_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('onhold', tk.BooleanVar(value=False)).get():
-                main.onhold_presentation()
+                main.onhold_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('objective', tk.BooleanVar(value=False)).get():
-                main.objective_presentation()
+                main.objective_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('projects', tk.BooleanVar(value=False)).get():
-                main.projects_presentation()
+                main.projects_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('output_all', tk.BooleanVar(value=False)).get():
-                main.output_all_presentation()
+                main.output_all_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    main.release_presentation(release_group)  # Pass the release group as an argument
+                    main.release_presentation(document_csv=document_csv, release_group=release_group, output_folder=output_folder)
                 else:
                     messagebox.showerror("Error", "Please select a release group for the release report")
             if self.option_vars.get('internal_release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    main.release_presentation(release_group, internal=True)  # Pass the release group and internal flag as arguments
+                    main.release_presentation(document_csv=document_csv, release_group=release_group, internal=True, output_folder=output_folder)
                 else:
                     messagebox.showerror("Error", "Please select a release group for the internal release report")
             if self.option_vars.get('docs', tk.BooleanVar(value=False)).get():
-                main.docs_presentation()
+                main.docs_presentation(document_csv=document_csv, output_folder=output_folder)
             if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
-                main.document_changes_presentation()
+                main.document_changes_presentation(document_csv=document_csv, output_folder=output_folder)
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
 root = tk.Tk()
 root.title("CSV Processing Tool")
-root.geometry('800x600')  # Set window size
-root.configure(bg='#2c3e50')  # Set background color
+root.geometry('800x600')
+root.configure(bg='#2c3e50')
 style = ttk.Style(root)
 style.theme_use('clam')
 app = Application(master=root)

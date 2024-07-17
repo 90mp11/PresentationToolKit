@@ -4,60 +4,52 @@ import utilities.data_utils as du
 import utilities.presentation_utils as pu
 import utilities.constants as const
 
-def engineering_presentation():
+def engineering_presentation(project_csv, output_folder):
     for eng in const.ENGINEERS:
-        person_filter(person=eng)
+        person_filter(project_csv=project_csv, person=eng, output_folder=output_folder)
     for rtl in const.RTL:
-        person_filter(person=rtl)
+        person_filter(project_csv=project_csv, person=rtl, output_folder=output_folder)
 
-def impact_presentation(impact_filter=None):
-    if not impact_filter:
-        impact_filter = input("Impacted Area: ")
-    impact_slides(filter=impact_filter)
+def impact_presentation(project_csv, impact_filter, output_folder):
+    impact_slides(project_csv=project_csv, filter=impact_filter, output_folder=output_folder)
 
-def allimpacted_presentation():
-    allimpacted()
+def allimpacted_presentation(project_csv, output_folder):
+    allimpacted(project_csv=project_csv, output_folder=output_folder)
 
-def who_presentation(name_filter=None):
-    if not name_filter:
-        name_filter = input("Name: ")
-    person_filter(person=name_filter)
+def who_presentation(project_csv, name_filter, output_folder):
+    person_filter(project_csv=project_csv, person=name_filter, output_folder=output_folder)
 
-def onhold_presentation():
-    df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
+def onhold_presentation(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
     prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
     pu.create_OnHold_slides(df, prs, no_section=True)
-    pu.save_exit(prs, "PEA_Project_Report", "_OnHold", const.FILE_LOCATIONS['output_folder'])
+    pu.save_exit(prs, "PEA_Project_Report", "_OnHold", output_folder)
 
-def objective_presentation():
-    objective()
+def objective_presentation(project_csv, output_folder):
+    objective(project_csv=project_csv, output_folder=output_folder)
 
-def projects_presentation():
-    df = du.create_blank_dataframe(const.FILE_LOCATIONS['project_csv'])
+def projects_presentation(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
     prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
     pu.create_project_section(df, prs)
-    pu.save_exit(prs, "PEA_Project_Report", "_Projects", const.FILE_LOCATIONS['output_folder'])
+    pu.save_exit(prs, "PEA_Project_Report", "_Projects", output_folder)
 
-def docs_presentation(date_filter=None):
-    if not date_filter:
-        date_filter = input("Date: ")
-    all_docs(name_filter=date_filter)
+def docs_presentation(document_csv, date_filter, output_folder):
+    all_docs(project_csv=document_csv, name_filter=date_filter, output_folder=output_folder)
 
-def document_changes_presentation():
-    doc_changes(const.FILE_LOCATIONS['document_csv'], const.FILE_LOCATIONS['output_folder'])
+def document_changes_presentation(document_csv, output_folder):
+    doc_changes(project_csv=document_csv, output_folder=output_folder)
 
-def output_all_presentation():
-    output_all()
+def output_all_presentation(project_csv, output_folder):
+    output_all(project_csv=project_csv, output_folder=output_folder)
 
-def release_presentation(release_group=None, internal=False):
-    if not release_group:
-        release_group = input("Release Group: ")
+def release_presentation(document_csv, release_group, internal, output_folder):
     if release_group == "BDUK":
-        release_board_slides_multi_filter(filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal)
+        release_board_slides_multi_filter(project_csv=document_csv, filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal, output_folder=output_folder)
     else:
-        release_board_slides(filter=release_group, internal=internal)
+        release_board_slides(project_csv=document_csv, filter=release_group, internal=internal, output_folder=output_folder)
 
-def person_filter(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], person='Matt', save=True, prs=None):
+def person_filter(project_csv, output_folder, person='Matt', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -68,7 +60,7 @@ def person_filter(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_"+person, output_folder)
     return output_path
 
-def impact_slides(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter=""):
+def impact_slides(project_csv, output_folder, filter=""):
     df = du.create_blank_dataframe(project_csv)
     impacted = du.impacted_teams_list(df)
     output_path = ""
@@ -83,7 +75,7 @@ def impact_slides(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_"+filter, output_folder)
     return output_path
 
-def allimpacted(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
+def allimpacted(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     impacted = du.impacted_teams_list(df)
     if prs is None:
@@ -95,7 +87,7 @@ def allimpacted(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=c
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_AllImpacts", output_folder)
     return output_path
 
-def objective(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
+def objective(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -105,7 +97,7 @@ def objective(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=con
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_Objective", output_folder)
     return output_path
 
-def output_all(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
+def output_all(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -122,7 +114,7 @@ def output_all(project_csv=const.FILE_LOCATIONS['project_csv'], output_folder=co
         output_path = pu.save_exit(prs, report_type="PEA_Project_Report", folder = output_folder)
     return output_path
 
-def all_docs(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], name_filter='', save=True, prs=None):
+def all_docs(project_csv, output_folder, name_filter='', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -132,7 +124,7 @@ def all_docs(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=con
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_DocumentBoard", folder = output_folder)
     return output_path
 
-def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], save=True, prs=None):
+def doc_changes(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
         prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
@@ -142,7 +134,7 @@ def doc_changes(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_DocumentChanges", folder = output_folder)
     return output_path
 
-def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter='', save=True, prs=None, internal=False):
+def release_board_slides(project_csv, output_folder, filter='', save=True, prs=None, internal=False):
     df = du.create_blank_dataframe(project_csv)
     save_tail = "_FullReleaseBoard"
     if filter:
@@ -167,7 +159,7 @@ def release_board_slides(project_csv=const.FILE_LOCATIONS['document_csv'], outpu
 
     return output_path
 
-def release_board_slides_multi_filter(project_csv=const.FILE_LOCATIONS['document_csv'], output_folder=const.FILE_LOCATIONS['output_folder'], filter='[]', save=True, prs=None, internal=False):
+def release_board_slides_multi_filter(project_csv, output_folder, filter='[]', save=True, prs=None, internal=False):
     df = du.create_blank_dataframe(project_csv)
     save_tail = "_FullReleaseBoard"
     if filter:
@@ -215,32 +207,38 @@ def main():
     parser.add_argument("--output_all", action="store_true", help="Exports the Standard Output Report in a single presentation")
     parser.add_argument("--release", action="store_true", help="Outputs the ReleaseBoard Impact Report in a single presentation")
     parser.add_argument("--internal", action="store_true", help="Sets a flag for Internal use only - Outputs the ReleaseBoard Impact Report in a single presentation")
+    parser.add_argument("--project_csv", type=str, help="Specify the project CSV file")
+    parser.add_argument("--document_csv", type=str, help="Specify the document CSV file")
+    parser.add_argument("--output_folder", type=str, help="Specify the output folder")
 
     args = parser.parse_args()
     internal = args.internal
+    project_csv = args.project_csv if args.project_csv else const.FILE_LOCATIONS['project_csv']
+    document_csv = args.document_csv if args.document_csv else const.FILE_LOCATIONS['document_csv']
+    output_folder = args.output_folder if args.output_folder else const.FILE_LOCATIONS['output_folder']
 
     if args.engineering:
-        engineering_presentation()
+        engineering_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.who:
-        who_presentation()
+        who_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.impact:
-        impact_presentation()
+        impact_presentation(project_csv=project_csv, impact_filter=None, output_folder=output_folder)
     if args.allimpacted:
-        allimpacted_presentation()
+        allimpacted_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.objective:
-        objective_presentation()
+        objective_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.onhold:
-        onhold_presentation()
+        onhold_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.projects:
-        projects_presentation()
+        projects_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.docs:
-        docs_presentation()
+        docs_presentation(document_csv=document_csv, date_filter=None, output_folder=output_folder)
     if args.document_changes:
-        document_changes_presentation()
+        document_changes_presentation(document_csv=document_csv, output_folder=output_folder)
     if args.output_all:
-        output_all_presentation()
+        output_all_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.release:
-        release_presentation()
+        release_presentation(document_csv=document_csv, release_group=None, internal=internal, output_folder=output_folder)
 
 if __name__ == "__main__":
     create_folders()
