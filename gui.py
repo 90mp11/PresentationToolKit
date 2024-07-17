@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
@@ -146,6 +147,18 @@ class Application(tk.Frame):
         self.quit_btn = ttk.Button(self.buttons_frame, text="QUIT", command=self.master.destroy)
         self.quit_btn.grid(row=0, column=1, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
 
+        # Folder selection button
+        self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
+        self.select_folder_btn.grid(row=0, column=1, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+
+    def select_output_folder(self):
+        folder_selected = filedialog.askdirectory()
+        if folder_selected:
+            self.output_folder = folder_selected
+        else:
+            self.output_folder = os.path.join(os.path.expanduser("~"), 'Downloads')
+        const.FILE_LOCATIONS['output_folder'] = self.output_folder
+
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
         if self.file_path:
@@ -160,8 +173,6 @@ class Application(tk.Frame):
                 self.options_container.grid()  # Show options frame after CSV upload
             except Exception as e:
                 messagebox.showerror("Error", str(e))
-        else:
-            messagebox.showerror("Error", "No file selected")
 
     def display_project_options(self):
         self.clear_options()
@@ -251,6 +262,11 @@ class Application(tk.Frame):
         if not hasattr(self, 'file_path') or not self.file_path:
             messagebox.showerror("Error", "Please upload a CSV file first")
             return
+
+        # Ensure output folder is set
+        if not hasattr(self, 'output_folder'):
+            self.output_folder = os.path.join(os.path.expanduser("~"), 'Downloads')
+        const.FILE_LOCATIONS['output_folder'] = self.output_folder
 
         try:
             df = pd.read_csv(self.file_path)
