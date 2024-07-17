@@ -6,6 +6,7 @@ from datetime import date, datetime
 import pandas as pd
 import math
 import ast
+import os
 from icecream import ic
 
 #import PresentationToolKit.utilities.constants as const 
@@ -22,13 +23,11 @@ def save_exit(prs, report_type="PEA_Project_Report", modifier="", folder=""):
     # Save the PowerPoint presentation
     today = date.today()
     current_time = datetime.now().strftime("%H%M")  # Get current hour and minute
-    output_pptx = f'{today.strftime("%y%m%d")}_{current_time}_{report_type}'
-    output_pptx += modifier
-    output_pptx += ".pptx"
+    output_pptx = f'{today.strftime("%y%m%d")}_{current_time}_{report_type}{modifier}.pptx'
 
-    save_to_location = folder + output_pptx
+    save_to_location = os.path.join(folder, output_pptx)  # Properly join the folder and filename
     prs.save(save_to_location)
-    return output_pptx
+    return save_to_location  # Return the full path of the saved file
 
 def placeholder_identifier(slide):
     for shape in slide.shapes:

@@ -156,12 +156,12 @@ class Application(tk.Frame):
                 messagebox.showerror("Error", str(e))
 
     def select_output_folder(self):
-        folder_selected = filedialog.askdirectory()
-        if folder_selected:
-            self.output_folder = folder_selected
+        self.output_folder = filedialog.askdirectory()
+        if self.output_folder:
+            print(f"Selected output folder: {self.output_folder}")
         else:
-            self.output_folder = os.path.join(os.path.expanduser("~"), 'Downloads')
-        const.FILE_LOCATIONS['output_folder'] = self.output_folder
+            self.output_folder = const.FILE_LOCATIONS['output_folder']
+            print(f"No folder selected, using default: {self.output_folder}")
 
     def display_project_options(self):
         self.clear_options()
@@ -255,10 +255,12 @@ class Application(tk.Frame):
             const.FILE_LOCATIONS['project_csv'] = self.file_path
             const.FILE_LOCATIONS['document_csv'] = self.file_path
 
+            # Retrieve the output folder path
             output_folder = getattr(self, 'output_folder', const.FILE_LOCATIONS['output_folder'])
             project_csv = const.FILE_LOCATIONS['project_csv']
             document_csv = const.FILE_LOCATIONS['document_csv']
 
+            # Call the appropriate functions with the selected output folder
             if self.option_vars.get('engineering', tk.BooleanVar(value=False)).get():
                 main.engineering_presentation(project_csv=project_csv, output_folder=output_folder)
             if self.option_vars.get('impact', tk.BooleanVar(value=False)).get():
