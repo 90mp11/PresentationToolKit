@@ -32,7 +32,8 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
-    icon='test.ico'
+    icon='test.ico',
+    onefile=True  # Add this line to enable onefile mode
 )
 
 coll = COLLECT(
