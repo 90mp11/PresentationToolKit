@@ -74,5 +74,5 @@ def main():
         run_gui()
 
 if __name__ == "__main__":
-    create_folders()
+    #create_folders()
     main()
