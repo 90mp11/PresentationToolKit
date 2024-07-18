@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
 import pandas as pd
 import utilities.constants as const
+import utilities.builder as bu
 
 class ToolTip:
     def __init__(self, widget, text):
@@ -58,6 +59,7 @@ class Application(tk.Frame):
         self.master = master
         self.master.title("CSV Processing Tool")
         self.master.geometry('800x600')
+        self.output_folder = const.FILE_LOCATIONS['output_folder']
         self.create_widgets()
 
     def create_widgets(self):
@@ -265,41 +267,41 @@ class Application(tk.Frame):
             const.FILE_LOCATIONS['document_csv'] = self.file_path  # Update the path in constants
 
             if self.option_vars.get('engineering', tk.BooleanVar(value=False)).get():
-                main.engineering_presentation(self.file_path, self.output_folder)
+                bu.engineering_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('impact', tk.BooleanVar(value=False)).get():
                 selected_impacted_areas = [area for area, var in self.impacted_areas_vars.items() if var.get()]
                 if selected_impacted_areas:
-                    main.impact_presentation(self.file_path, selected_impacted_areas, self.output_folder)
+                    bu.impact_presentation(self.file_path, selected_impacted_areas, self.output_folder)
                 else:
-                    main.allimpacted_presentation(self.file_path, self.output_folder)
+                    bu.allimpacted_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('allimpacted', tk.BooleanVar(value=False)).get():
-                main.allimpacted_presentation(self.file_path, self.output_folder)
+                bu.allimpacted_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('who', tk.BooleanVar(value=False)).get():
-                main.who_presentation(self.file_path, None, self.output_folder)
+                bu.who_presentation(self.file_path, None, self.output_folder)
             if self.option_vars.get('onhold', tk.BooleanVar(value=False)).get():
-                main.onhold_presentation(self.file_path, self.output_folder)
-            if self.option_vars.get('objpython ective', tk.BooleanVar(value=False)).get():
-                main.objective_presentation(self.file_path, self.output_folder)
+                bu.onhold_presentation(self.file_path, self.output_folder)
+            if self.option_vars.get('objective', tk.BooleanVar(value=False)).get():
+                bu.objective_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('projects', tk.BooleanVar(value=False)).get():
-                main.projects_presentation(self.file_path, self.output_folder)
+                bu.projects_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('output_all', tk.BooleanVar(value=False)).get():
-                main.output_all_presentation(self.file_path, self.output_folder)
+                bu.output_all_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    main.release_presentation(self.file_path, release_group, internal=False, output_folder=self.output_folder)  # Pass the release group as an argument
+                    bu.release_presentation(self.file_path, release_group, internal=False, output_folder=self.output_folder)  # Pass the release group as an argument
                 else:
                     messagebox.showerror("Error", "Please select a release group for the release report")
             if self.option_vars.get('internal_release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    main.release_presentation(self.file_path, release_group, internal=True, output_folder=self.output_folder)  # Pass the release group and internal flag as arguments
+                    bu.release_presentation(self.file_path, release_group, internal=True, output_folder=self.output_folder)  # Pass the release group and internal flag as arguments
                 else:
                     messagebox.showerror("Error", "Please select a release group for the internal release report")
             if self.option_vars.get('docs', tk.BooleanVar(value=False)).get():
-                main.docs_presentation(self.file_path, self.output_folder)
+                bu.docs_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
-                main.document_changes_presentation(self.file_path, self.output_folder)
+                bu.document_changes_presentation(self.file_path, self.output_folder)
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
@@ -315,5 +317,4 @@ def start_gui():
     app.mainloop()
 
 if __name__ == "__main__":
-    import main
     start_gui()
