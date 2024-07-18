@@ -3,7 +3,6 @@ import os
 import utilities.data_utils as du
 import utilities.presentation_utils as pu
 import utilities.constants as const
-from gui import start_gui
 
 def engineering_presentation(project_csv, output_folder):
     for eng in const.ENGINEERS:
@@ -197,6 +196,10 @@ def create_folders(folder_names=['output', 'raw', 'templates', 'utilities']):
             os.mkdir(path)
             print(f"Created missing folder: {path}")
 
+def run_gui():
+    from gui import start_gui
+    start_gui()
+
 def main():
     parser = argparse.ArgumentParser(description="Project Reporting tool developed by the Passive Engineering Team.")
     parser.add_argument("--engineering", action="store_true", help="Create a batch of Presentations, one for each listed Team Member in the constants.py file")
@@ -222,6 +225,8 @@ def main():
     document_csv = args.document_csv if args.document_csv else const.FILE_LOCATIONS['document_csv']
     output_folder = args.output_folder if args.output_folder else const.FILE_LOCATIONS['output_folder']
 
+    if args.gui:
+        run_gui()
     if args.engineering:
         engineering_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.who:
@@ -247,9 +252,4 @@ def main():
 
 if __name__ == "__main__":
     create_folders()
-    if len(os.sys.argv) == 1:
-        # No command-line arguments, start the GUI
-        start_gui()
-    else:
-        # Command-line arguments provided, run main
-        main()
+    main()
