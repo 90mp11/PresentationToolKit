@@ -3,6 +3,7 @@ import os
 import utilities.data_utils as du
 import utilities.presentation_utils as pu
 import utilities.constants as const
+from gui import start_gui
 
 def engineering_presentation(project_csv, output_folder):
     for eng in const.ENGINEERS:
@@ -246,4 +247,9 @@ def main():
 
 if __name__ == "__main__":
     create_folders()
-    main()
+    if len(os.sys.argv) == 1:
+        # No command-line arguments, start the GUI
+        start_gui()
+    else:
+        # Command-line arguments provided, run main
+        main()

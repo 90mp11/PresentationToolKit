@@ -269,7 +269,7 @@ class Application(tk.Frame):
                 main.who_presentation(self.file_path, None, self.output_folder)
             if self.option_vars.get('onhold', tk.BooleanVar(value=False)).get():
                 main.onhold_presentation(self.file_path, self.output_folder)
-            if self.option_vars.get('objective', tk.BooleanVar(value=False)).get():
+            if self.option_vars.get('objpython ective', tk.BooleanVar(value=False)).get():
                 main.objective_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('projects', tk.BooleanVar(value=False)).get():
                 main.projects_presentation(self.file_path, self.output_folder)
@@ -295,11 +295,12 @@ class Application(tk.Frame):
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-root = tk.Tk()
-root.title("CSV Processing Tool")
-root.geometry('800x600')
-root.configure(bg='#2c3e50')
-style = ttk.Style(root)
-style.theme_use('clam')
-app = Application(master=root)
-app.mainloop()
+def start_gui():
+    root = tk.Tk()
+    root.title("CSV Processing Tool")
+    root.geometry('800x600')  # Set window size
+    root.configure(bg='#2c3e50')  # Set background color
+    style = ttk.Style(root)
+    style.theme_use('clam')
+    app = Application(master=root)
+    app.mainloop()
