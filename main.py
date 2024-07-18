@@ -218,6 +218,7 @@ def main():
     parser.add_argument("--project_csv", type=str, help="Specify the project CSV file")
     parser.add_argument("--document_csv", type=str, help="Specify the document CSV file")
     parser.add_argument("--output_folder", type=str, help="Specify the output folder")
+    parser.add_argument("--gui", action="store_true", help="Launch the graphical user interface")
 
     args = parser.parse_args()
     internal = args.internal
