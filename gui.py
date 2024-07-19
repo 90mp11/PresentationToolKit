@@ -102,21 +102,29 @@ class Application(tk.Frame):
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
 
+        # Title Label
+        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Creator - Version 1.0", font=self.heading_font)
+        self.title_label.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky=tk.N)
+
         # Upload button
         self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
-        self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+        self.upload_btn.grid(row=1, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
-        self.file_label = ttk.Label(self.scrollable_frame, text="No File Selected", font=self.default_font)
-        self.file_label.grid(row=0, column=1, pady=20, padx=20, sticky=tk.W)
+        self.file_label = ttk.Label(self.scrollable_frame, text="[name of file]", font=self.default_font)
+        self.file_label.grid(row=1, column=1, pady=20, padx=20, sticky=tk.W)
+
+        # Logo Image File button
+        self.logo_btn = ttk.Button(self.scrollable_frame, text="Logo Image File", command=self.upload_file)  # Adjust command as needed
+        self.logo_btn.grid(row=1, column=2, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
-        self.select_folder_btn.grid(row=0, column=2, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+        self.select_folder_btn.grid(row=2, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
-        self.folder_label = ttk.Label(self.scrollable_frame, text="No Folder Selected", font=self.default_font)
-        self.folder_label.grid(row=0, column=3, pady=20, padx=20, sticky=tk.W)
+        self.folder_label = ttk.Label(self.scrollable_frame, text="[name of folder]", font=self.default_font)
+        self.folder_label.grid(row=2, column=1, pady=20, padx=20, sticky=tk.W)
 
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.options_container.grid(row=1, column=0, columnspan=4, pady=20, padx=20, sticky=tk.W)
+        self.options_container.grid(row=3, column=0, columnspan=4, pady=20, padx=20, sticky=tk.W)
         self.options_container.columnconfigure(0, weight=1)
         self.options_container.grid_remove()
 
@@ -131,7 +139,7 @@ class Application(tk.Frame):
 
         # Impacted Areas container (initially hidden)
         self.impacted_areas_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.impacted_areas_frame.grid(row=1, column=1, pady=20, padx=20, sticky=tk.NW)
+        self.impacted_areas_frame.grid(row=4, column=0, columnspan=4, pady=20, padx=20, sticky=tk.NW)
         self.impacted_areas_frame.columnconfigure(0, weight=1)
         self.impacted_areas_frame.grid_remove()
 
@@ -146,7 +154,7 @@ class Application(tk.Frame):
 
         # Process and Quit buttons frame
         self.buttons_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.buttons_frame.grid(row=2, column=0, pady=20, padx=20, sticky=tk.W)
+        self.buttons_frame.grid(row=5, column=0, columnspan=4, pady=20, padx=20, sticky=tk.EW)
         self.buttons_frame.columnconfigure(0, weight=1)
 
         self.process_btn = ttk.Button(self.buttons_frame, text="Process", command=self.process_file)
@@ -332,12 +340,12 @@ class Application(tk.Frame):
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-    def show_toast(master, message):
-        toast = tk.Toplevel(master)
+    def show_toast(self, message):
+        toast = tk.Toplevel(self)
         toast.wm_overrideredirect(True)
         toast.attributes("-topmost", True)
-        x = master.winfo_rootx() + 50
-        y = master.winfo_rooty() + 50
+        x = self.master.winfo_rootx() + 50
+        y = self.master.winfo_rooty() + 50
         toast.geometry(f"+{x}+{y}")
         label = tk.Label(toast, text=message, bg="black", fg="white", font=("Roboto", 10))
         label.pack(ipadx=10, ipady=5)
