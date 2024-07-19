@@ -59,7 +59,7 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.master.title("Passive Engineering Report Generator")
-        self.master.geometry('850x850')
+        self.master.geometry('750x750')
         self.output_folder = const.FILE_LOCATIONS['output_folder']
         self.create_widgets()
 
@@ -78,12 +78,14 @@ class Application(tk.Frame):
         style.configure('TCombobox', font=('Roboto', 12))
         style.map('TButton', background=[('active', '#2980b9'), ('pressed', '#1abc9c')])
         style.map('TCheckbutton', background=[('active', '#2c3e50'), ('selected', '#2c3e50')],
-                  foreground=[('active', '#ecf0f1'), ('selected', '#ecf0f1')],
-                  indicatorcolor=[('selected', '#ecf0f1'), ('!selected', '#ecf0f1')])
+                foreground=[('active', '#ecf0f1'), ('selected', '#ecf0f1')],
+                indicatorcolor=[('selected', '#ecf0f1'), ('!selected', '#ecf0f1')])
 
         # Custom font
+        self.title_font = Font(family="Impact", size=22)
         self.heading_font = Font(family="Roboto", size=14)
         self.default_font = Font(family="Roboto", size=12)
+        self.bold_font = Font(family="Roboto", size=12, weight="bold")
 
         # Main frame with scrollbar
         self.canvas = tk.Canvas(self.master, bg='#2c3e50')
@@ -104,31 +106,31 @@ class Application(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
 
         # Title Label
-        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Generator", font=self.heading_font)
-        self.title_label.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky=tk.N)
-
-        # Upload button
-        self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
-        self.upload_btn.grid(row=1, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
-
-        self.file_label = ttk.Label(self.scrollable_frame, text="No File Selected", font=self.default_font)
-        self.file_label.grid(row=1, column=1, pady=20, padx=20, sticky=tk.W)
+        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Generator", font=self.title_font)
+        self.title_label.grid(row=0, column=0, columnspan=3, pady=(10, 0), padx=20, sticky=tk.W)
 
         # Add the logo image
         self.logo_image = Image.open("LOGO.png")
-        self.logo_image = self.logo_image.resize((218, 71), Image.LANCZOS)  # Correct attribute for Pillow
+        self.logo_image = self.logo_image.resize((154, 50), Image.LANCZOS)  # Correct attribute for Pillow
         self.logo_photo = ImageTk.PhotoImage(self.logo_image)
         self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
-        self.logo_label.grid(row=0, column=4, pady=20, padx=20, sticky=tk.E)
+        self.logo_label.grid(row=0, column=3, pady=(10, 0), padx=20, sticky=tk.E)
+
+        # Upload button
+        self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
+        self.upload_btn.grid(row=1, column=0, pady=10, padx=20, ipadx=10, ipady=5, sticky=tk.W)
+
+        self.file_label = ttk.Label(self.scrollable_frame, text="No File Selected", font=self.bold_font)
+        self.file_label.grid(row=1, column=1, pady=10, padx=10, sticky=tk.W)
 
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
-        self.select_folder_btn.grid(row=2, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+        self.select_folder_btn.grid(row=2, column=0, pady=10, padx=20, ipadx=10, ipady=5, sticky=tk.W)
 
-        self.folder_label = ttk.Label(self.scrollable_frame, text="No Folder Selected", font=self.default_font)
-        self.folder_label.grid(row=2, column=1, pady=20, padx=20, sticky=tk.W)
+        self.folder_label = ttk.Label(self.scrollable_frame, text="No Folder Selected", font=self.bold_font)
+        self.folder_label.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
 
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.options_container.grid(row=3, column=0, columnspan=4, pady=20, padx=20, sticky=tk.W)
+        self.options_container.grid(row=3, column=0, columnspan=4, pady=20, padx=20, sticky=tk.NW)
         self.options_container.columnconfigure(0, weight=1)
         self.options_container.grid_remove()
 
@@ -169,6 +171,8 @@ class Application(tk.Frame):
 
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
+        self.clear_impacted_areas()  # Clear impacted areas when a new file is uploaded
+        self.impacted_areas_frame.grid_remove()  # Hide the impacted areas frame
         if self.file_path:
             try:
                 self.file_label.config(text=self.file_path.split("/")[-1])
@@ -182,7 +186,7 @@ class Application(tk.Frame):
                 self.options_container.grid()  # Show options frame after CSV upload
             except Exception as e:
                 messagebox.showerror("Error", str(e))
-
+                
     def select_output_folder(self):
         self.output_folder = filedialog.askdirectory()
         if self.output_folder:
