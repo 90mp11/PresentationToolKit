@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
 from PIL import Image, ImageTk, UnidentifiedImageError
 import os
+import sys
 import pandas as pd
 import utilities.constants as const
 import utilities.builder as bu
@@ -111,7 +112,7 @@ class Application(tk.Frame):
         self.title_label.grid(row=0, column=0, columnspan=3, pady=(10, 0), padx=20, sticky=tk.W)
 
         # Add the logo image
-        self.logo_image = Image.open("LOGO.png")
+        self.logo_image = Image.open(resource_path("LOGO.png"))
         self.logo_image = self.logo_image.resize((154, 50), Image.LANCZOS)  # Correct attribute for Pillow
         self.logo_photo = ImageTk.PhotoImage(self.logo_image)
         self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
@@ -286,7 +287,7 @@ class Application(tk.Frame):
 
     def process_file(self):
         if not hasattr(self, 'file_path') or not self.file_path:
-            self.show_png_image("magic.png")  # Path to your .png image
+            self.show_png_image(resource_path("magic.png"))  # Path to your .png image
             return
 
         try:
@@ -356,14 +357,13 @@ class Application(tk.Frame):
             png_image = Image.open(png_path)
             png_photo = ImageTk.PhotoImage(png_image)
             png_window = tk.Toplevel(self)
-            png_window.title("Easter Egg")
+            png_window.title("Ah ah ah - you didn't select a CSV File")
             label = tk.Label(png_window, image=png_photo)
             label.image = png_photo  # Keep a reference to avoid garbage collection
             label.pack()
             png_window.geometry(f"{png_image.width}x{png_image.height}")
         except UnidentifiedImageError:
             messagebox.showerror("Error", "Could not open the .png image.")
-
 
     def show_toast(self, message):
         toast = tk.Toplevel(self)
@@ -375,6 +375,16 @@ class Application(tk.Frame):
         label = tk.Label(toast, text=message, bg="black", fg="white", font=("Roboto", 10))
         label.pack(ipadx=10, ipady=5)
         toast.after(3000, toast.destroy)
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+            
+    return os.path.join(base_path, relative_path)
 
 def start_gui():
     root = tk.Tk()
