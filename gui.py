@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
-from PIL import Image, ImageTk
-import pandas as pd
+from PIL import Image, ImageTk, UnidentifiedImageError
 import os
+import pandas as pd
 import utilities.constants as const
 import utilities.builder as bu
 
@@ -286,7 +286,7 @@ class Application(tk.Frame):
 
     def process_file(self):
         if not hasattr(self, 'file_path') or not self.file_path:
-            messagebox.showerror("Error", "Please upload a CSV file first")
+            self.show_png_image("magic.png")  # Path to your .png image
             return
 
         try:
@@ -350,6 +350,20 @@ class Application(tk.Frame):
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
+
+    def show_png_image(self, png_path):
+        try:
+            png_image = Image.open(png_path)
+            png_photo = ImageTk.PhotoImage(png_image)
+            png_window = tk.Toplevel(self)
+            png_window.title("Easter Egg")
+            label = tk.Label(png_window, image=png_photo)
+            label.image = png_photo  # Keep a reference to avoid garbage collection
+            label.pack()
+            png_window.geometry(f"{png_image.width}x{png_image.height}")
+        except UnidentifiedImageError:
+            messagebox.showerror("Error", "Could not open the .png image.")
+
 
     def show_toast(self, message):
         toast = tk.Toplevel(self)

@@ -9,9 +9,9 @@ a = Analysis(
     pathex=['.'],
     binaries=[],
     datas=[
+        ('magic.png', '.'),
         ('LOGO.png', '.'),
         ('templates/_template.pptx', 'templates'),
-        ('utilities/magic.png', 'utilities'),
         ('utilities/builder.py', 'utilities'),
         ('utilities/constants.py', 'utilities'),
         ('utilities/data_utils.py', 'utilities'),
