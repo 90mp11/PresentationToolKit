@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
+from PIL import Image, ImageTk
 import pandas as pd
 import utilities.constants as const
 import utilities.builder as bu
@@ -104,7 +105,14 @@ class Application(tk.Frame):
 
         # Title Label
         self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Creator - Version 1.0", font=self.heading_font)
-        self.title_label.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky=tk.N)
+        self.title_label.grid(row=0, column=0, columnspan=4, pady=20, padx=20, sticky=tk.N)
+
+        # Logo image
+        self.logo_image = Image.open("LOGO.png")
+        self.logo_image = self.logo_image.resize((200, 100), Image.ANTIALIAS)
+        self.logo_photo = ImageTk.PhotoImage(self.logo_image)
+        self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
+        self.logo_label.grid(row=0, column=4, pady=20, padx=20, sticky=tk.E)
 
         # Upload button
         self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
@@ -112,10 +120,6 @@ class Application(tk.Frame):
 
         self.file_label = ttk.Label(self.scrollable_frame, text="[name of file]", font=self.default_font)
         self.file_label.grid(row=1, column=1, pady=20, padx=20, sticky=tk.W)
-
-        # Logo Image File button
-        self.logo_btn = ttk.Button(self.scrollable_frame, text="Logo Image File", command=self.upload_file)  # Adjust command as needed
-        self.logo_btn.grid(row=1, column=2, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
         self.select_folder_btn.grid(row=2, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
