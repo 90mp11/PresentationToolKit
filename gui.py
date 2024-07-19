@@ -1,9 +1,9 @@
-import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
 from PIL import Image, ImageTk
 import pandas as pd
+import os
 import utilities.constants as const
 import utilities.builder as bu
 
@@ -60,7 +60,7 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.master.title("Passive Engineering Report Generator")
-        self.master.geometry('750x750')
+        self.master.geometry('800x750')
         self.output_folder = os.path.join(os.path.expanduser("~"), "Downloads")
         self.create_widgets()
 
@@ -129,6 +129,7 @@ class Application(tk.Frame):
 
         self.folder_label = ttk.Label(self.scrollable_frame, text=f"{self.output_folder}", font=self.bold_font)
         self.folder_label.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
+        self.folder_label.bind("<Button-1>", self.open_output_folder)
 
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
         self.options_container.grid(row=3, column=0, columnspan=4, pady=20, padx=20, sticky=tk.NW)
@@ -193,8 +194,11 @@ class Application(tk.Frame):
         if self.output_folder:
             self.folder_label.config(text=self.output_folder)
         else:
-            self.output_folder = const.FILE_LOCATIONS['output_folder']
+            self.output_folder = os.path.join(os.path.expanduser("~"), "Downloads")
             self.folder_label.config(text=self.output_folder)
+
+    def open_output_folder(self, event):
+        os.startfile(self.output_folder)
 
     def display_project_options(self):
         self.clear_options()
@@ -361,7 +365,7 @@ class Application(tk.Frame):
 def start_gui():
     root = tk.Tk()
     root.title("Passive Engineering Report Generator")
-    root.geometry('800x600')  # Set window size
+    root.geometry('850x680')  # Set window size
     root.configure(bg='#2c3e50')  # Set background color
     style = ttk.Style(root)
     style.theme_use('clam')
