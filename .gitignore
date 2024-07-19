@@ -8,3 +8,4 @@ temp
 /.vscode/*
 /build/*
 /dist/*
+/venv/*

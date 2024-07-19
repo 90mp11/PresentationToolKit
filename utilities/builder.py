@@ -1,7 +1,18 @@
 import os
+import sys
 import utilities.data_utils as du
 import utilities.presentation_utils as pu
 import utilities.constants as const
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, relative_path)
 
 def engineering_presentation(project_csv, output_folder):
     for eng in const.ENGINEERS:
@@ -24,7 +35,7 @@ def who_presentation(project_csv, name_filter, output_folder):
 
 def onhold_presentation(project_csv, output_folder):
     df = du.create_blank_dataframe(project_csv)
-    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_OnHold_slides(df, prs, no_section=True)
     pu.save_exit(prs, "PEA_Project_Report", "_OnHold", output_folder)
 
@@ -33,7 +44,7 @@ def objective_presentation(project_csv, output_folder):
 
 def projects_presentation(project_csv, output_folder):
     df = du.create_blank_dataframe(project_csv)
-    prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+    prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_project_section(df, prs)
     pu.save_exit(prs, "PEA_Project_Report", "_Projects", output_folder)
 
@@ -55,7 +66,7 @@ def release_presentation(document_csv, release_group, internal, output_folder):
 def person_filter(project_csv, output_folder, person='Matt', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_ProjectOwner_slides(df, prs, person)
     pu.create_Objective_slides(df, prs, person)
     output_path = ""
@@ -69,11 +80,11 @@ def impact_slides(project_csv, output_folder, filter=""):
     output_path = ""
     if filter == "":
         for imp in impacted:
-            prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+            prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
             pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
             pu.save_exit(prs, "PEA_Project_Report", "_"+imp, output_folder)
     else:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=filter)
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_"+filter, output_folder)
     return output_path
@@ -82,7 +93,7 @@ def allimpacted(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     impacted = du.impacted_teams_list(df)
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     output_path = ""
     for imp in impacted:
         pu.create_Impacted_section(df, prs, no_section=True, impacted_team=imp)
@@ -93,7 +104,7 @@ def allimpacted(project_csv, output_folder, save=True, prs=None):
 def objective(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_Objective_slides(df, prs)
     output_path = ""
     if save:
@@ -104,7 +115,7 @@ def objective(project_csv, output_folder, save=True, prs=None):
 def output_all(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_AllProjects_slide(df, prs)
     pu.create_ProjectOwner_slides(df, prs)
     pu.create_Objective_slides(df, prs)
@@ -121,7 +132,7 @@ def output_all(project_csv, output_folder, save=True, prs=None):
 def all_docs(project_csv, output_folder, name_filter='', save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_document_release_section(df, prs, name_filter)
     output_path = ""
     if save:
@@ -131,7 +142,7 @@ def all_docs(project_csv, output_folder, name_filter='', save=True, prs=None):
 def doc_changes(project_csv, output_folder, save=True, prs=None):
     df = du.create_blank_dataframe(project_csv)
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_document_changes_section(df, prs)
     output_path = ""
     if save:
@@ -150,7 +161,7 @@ def release_board_slides(project_csv, output_folder, filter='', save=True, prs=N
         save_tail = save_tail + "_internal"
 
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
 
     pu.create_document_release_section(df, prs, filter, internal=internal)
     output_path = ""
@@ -172,7 +183,7 @@ def release_board_slides_multi_filter(project_csv, output_folder, filter='[]', s
     impacted = du.impacted_teams_list(df)
 
     if prs is None:
-        prs = pu.create_blank_presentation(const.FILE_LOCATIONS['pptx_template'])
+        prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
 
     pu.create_document_release_section_multi_filter(df, prs, filter, internal=internal)
     output_path = ""
