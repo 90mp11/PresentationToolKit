@@ -15,17 +15,25 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def engineering_presentation(project_csv, output_folder):
+    count = 0
     for eng in const.ENGINEERS:
         person_filter(project_csv=project_csv, person=eng, output_folder=output_folder)
+        count += 1
     for rtl in const.RTL:
         person_filter(project_csv=project_csv, person=rtl, output_folder=output_folder)
+        count += 1
+    return count
 
 def impact_presentation(project_csv, impact_filter, output_folder):
+    count = 0
     if isinstance(impact_filter, list):
         for filter_item in impact_filter:
             impact_slides(project_csv=project_csv, filter=filter_item, output_folder=output_folder)
+            count += 1
     else:
         impact_slides(project_csv=project_csv, filter=impact_filter, output_folder=output_folder)
+        count += 1
+    return count
 
 def allimpacted_presentation(project_csv, output_folder):
     allimpacted(project_csv=project_csv, output_folder=output_folder)

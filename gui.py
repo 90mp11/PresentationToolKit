@@ -266,42 +266,58 @@ class Application(tk.Frame):
             const.FILE_LOCATIONS['project_csv'] = self.file_path  # Update the path in constants
             const.FILE_LOCATIONS['document_csv'] = self.file_path  # Update the path in constants
 
+            files_created = 0
+
             if self.option_vars.get('engineering', tk.BooleanVar(value=False)).get():
-                bu.engineering_presentation(self.file_path, self.output_folder)
+                files_created += bu.engineering_presentation(self.file_path, self.output_folder)
             if self.option_vars.get('impact', tk.BooleanVar(value=False)).get():
                 selected_impacted_areas = [area for area, var in self.impacted_areas_vars.items() if var.get()]
                 if selected_impacted_areas:
-                    bu.impact_presentation(self.file_path, selected_impacted_areas, self.output_folder)
+                    files_created += bu.impact_presentation(self.file_path, selected_impacted_areas, self.output_folder)
                 else:
                     bu.allimpacted_presentation(self.file_path, self.output_folder)
+                    files_created += 1
             if self.option_vars.get('allimpacted', tk.BooleanVar(value=False)).get():
                 bu.allimpacted_presentation(self.file_path, self.output_folder)
+                files_created += 1
             if self.option_vars.get('who', tk.BooleanVar(value=False)).get():
                 bu.who_presentation(self.file_path, None, self.output_folder)
+                files_created += 1
             if self.option_vars.get('onhold', tk.BooleanVar(value=False)).get():
                 bu.onhold_presentation(self.file_path, self.output_folder)
+                files_created += 1
             if self.option_vars.get('objective', tk.BooleanVar(value=False)).get():
                 bu.objective_presentation(self.file_path, self.output_folder)
+                files_created += 1
             if self.option_vars.get('projects', tk.BooleanVar(value=False)).get():
                 bu.projects_presentation(self.file_path, self.output_folder)
+                files_created += 1
             if self.option_vars.get('output_all', tk.BooleanVar(value=False)).get():
                 bu.output_all_presentation(self.file_path, self.output_folder)
+                files_created += 1
             if self.option_vars.get('release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    bu.release_presentation(self.file_path, release_group, internal=False, output_folder=self.output_folder)  # Pass the release group as an argument
+                    bu.release_presentation(self.file_path, release_group, internal=False, output_folder=self.output_folder)
+                    files_created += 1
                 else:
                     messagebox.showerror("Error", "Please select a release group for the release report")
             if self.option_vars.get('internal_release', tk.BooleanVar(value=False)).get():
                 release_group = self.release_group_var.get()
                 if release_group:
-                    bu.release_presentation(self.file_path, release_group, internal=True, output_folder=self.output_folder)  # Pass the release group and internal flag as arguments
+                    bu.release_presentation(self.file_path, release_group, internal=True, output_folder=self.output_folder)
+                    files_created += 1
                 else:
                     messagebox.showerror("Error", "Please select a release group for the internal release report")
             if self.option_vars.get('docs', tk.BooleanVar(value=False)).get():
                 bu.docs_presentation(self.file_path, self.output_folder)
+                files_created += 1
             if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
                 bu.document_changes_presentation(self.file_path, self.output_folder)
+                files_created += 1
+
+            if files_created > 0:
+                show_toast(self.master, f"{files_created} files have been created successfully")
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
@@ -315,6 +331,18 @@ def start_gui():
     style.theme_use('clam')
     app = Application(master=root)
     app.mainloop()
+
+def show_toast(master, message):
+    toast = tk.Toplevel(master)
+    toast.wm_overrideredirect(True)
+    toast.attributes("-topmost", True)
+    x = master.winfo_rootx() + 50
+    y = master.winfo_rooty() + 50
+    toast.geometry(f"+{x}+{y}")
+    label = tk.Label(toast, text=message, bg="black", fg="white", font=("Roboto", 10))
+    label.pack(ipadx=10, ipady=5)
+    toast.after(3000, toast.destroy)
+
 
 if __name__ == "__main__":
     start_gui()
