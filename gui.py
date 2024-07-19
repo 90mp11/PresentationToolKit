@@ -58,8 +58,8 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.master.title("CSV Processing Tool")
-        self.master.geometry('800x600')
+        self.master.title("Passive Engineering Report Generator")
+        self.master.geometry('850x850')
         self.output_folder = const.FILE_LOCATIONS['output_folder']
         self.create_widgets()
 
@@ -104,27 +104,27 @@ class Application(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
 
         # Title Label
-        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Creator - Version 1.0", font=self.heading_font)
-        self.title_label.grid(row=0, column=0, columnspan=4, pady=20, padx=20, sticky=tk.N)
-
-        # Logo image
-        self.logo_image = Image.open("LOGO.png")
-        self.logo_image = self.logo_image.resize((200, 100), Image.ANTIALIAS)
-        self.logo_photo = ImageTk.PhotoImage(self.logo_image)
-        self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
-        self.logo_label.grid(row=0, column=4, pady=20, padx=20, sticky=tk.E)
+        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Generator", font=self.heading_font)
+        self.title_label.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky=tk.N)
 
         # Upload button
         self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
         self.upload_btn.grid(row=1, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
-        self.file_label = ttk.Label(self.scrollable_frame, text="[name of file]", font=self.default_font)
+        self.file_label = ttk.Label(self.scrollable_frame, text="No File Selected", font=self.default_font)
         self.file_label.grid(row=1, column=1, pady=20, padx=20, sticky=tk.W)
+
+        # Add the logo image
+        self.logo_image = Image.open("LOGO.png")
+        self.logo_image = self.logo_image.resize((218, 71), Image.LANCZOS)  # Correct attribute for Pillow
+        self.logo_photo = ImageTk.PhotoImage(self.logo_image)
+        self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
+        self.logo_label.grid(row=0, column=4, pady=20, padx=20, sticky=tk.E)
 
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
         self.select_folder_btn.grid(row=2, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
-        self.folder_label = ttk.Label(self.scrollable_frame, text="[name of folder]", font=self.default_font)
+        self.folder_label = ttk.Label(self.scrollable_frame, text="No Folder Selected", font=self.default_font)
         self.folder_label.grid(row=2, column=1, pady=20, padx=20, sticky=tk.W)
 
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
@@ -143,7 +143,7 @@ class Application(tk.Frame):
 
         # Impacted Areas container (initially hidden)
         self.impacted_areas_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.impacted_areas_frame.grid(row=4, column=0, columnspan=4, pady=20, padx=20, sticky=tk.NW)
+        self.impacted_areas_frame.grid(row=3, column=1, columnspan=4, pady=20, padx=20, sticky=tk.NW)
         self.impacted_areas_frame.columnconfigure(0, weight=1)
         self.impacted_areas_frame.grid_remove()
 
@@ -158,7 +158,7 @@ class Application(tk.Frame):
 
         # Process and Quit buttons frame
         self.buttons_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.buttons_frame.grid(row=5, column=0, columnspan=4, pady=20, padx=20, sticky=tk.EW)
+        self.buttons_frame.grid(row=5, column=0, columnspan=4, pady=20, padx=0, sticky=tk.EW)
         self.buttons_frame.columnconfigure(0, weight=1)
 
         self.process_btn = ttk.Button(self.buttons_frame, text="Process", command=self.process_file)
@@ -357,7 +357,7 @@ class Application(tk.Frame):
 
 def start_gui():
     root = tk.Tk()
-    root.title("CSV Processing Tool")
+    root.title("Passive Engineering Report Generator")
     root.geometry('800x600')  # Set window size
     root.configure(bg='#2c3e50')  # Set background color
     style = ttk.Style(root)
