@@ -12,7 +12,6 @@ def create_folders(folder_names=['output', 'raw', 'templates', 'utilities']):
         
         # Check if the folder already exists to avoid trying to create it again
         if not os.path.exists(path):
-            # Create the folder
             os.mkdir(path)
             print(f"Created missing folder: {path}")
 
@@ -74,5 +73,4 @@ def main():
         run_gui()
 
 if __name__ == "__main__":
-    #create_folders()
     main()
