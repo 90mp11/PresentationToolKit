@@ -106,11 +106,17 @@ class Application(tk.Frame):
         self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
         self.upload_btn.grid(row=0, column=0, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
 
+        self.file_label = ttk.Label(self.scrollable_frame, text="No File Selected", font=self.default_font)
+        self.file_label.grid(row=0, column=1, pady=20, padx=20, sticky=tk.W)
+
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
-        self.select_folder_btn.grid(row=0, column=1, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+        self.select_folder_btn.grid(row=0, column=2, pady=20, padx=20, ipadx=20, ipady=10, sticky=tk.W)
+
+        self.folder_label = ttk.Label(self.scrollable_frame, text="No Folder Selected", font=self.default_font)
+        self.folder_label.grid(row=0, column=3, pady=20, padx=20, sticky=tk.W)
 
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.options_container.grid(row=1, column=0, pady=20, padx=20, sticky=tk.W)
+        self.options_container.grid(row=1, column=0, columnspan=4, pady=20, padx=20, sticky=tk.W)
         self.options_container.columnconfigure(0, weight=1)
         self.options_container.grid_remove()
 
@@ -153,6 +159,7 @@ class Application(tk.Frame):
         self.file_path = filedialog.askopenfilename()
         if self.file_path:
             try:
+                self.file_label.config(text=self.file_path.split("/")[-1])
                 df = pd.read_csv(self.file_path)
                 if 'Project Updates' in df.columns:
                     self.display_project_options()
@@ -167,9 +174,11 @@ class Application(tk.Frame):
     def select_output_folder(self):
         self.output_folder = filedialog.askdirectory()
         if self.output_folder:
+            self.folder_label.config(text=self.output_folder)
             print(f"Selected output folder: {self.output_folder}")
         else:
             self.output_folder = const.FILE_LOCATIONS['output_folder']
+            self.folder_label.config(text=self.output_folder)
             print(f"No folder selected, using default: {self.output_folder}")
 
     def display_project_options(self):
@@ -316,11 +325,23 @@ class Application(tk.Frame):
                 bu.document_changes_presentation(self.file_path, self.output_folder)
                 files_created += 1
 
+            # Show toast notification
             if files_created > 0:
-                show_toast(self.master, f"{files_created} files have been created successfully")
+                self.show_toast(f"Processing complete. {files_created} files saved to {self.output_folder}")
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
+
+    def show_toast(master, message):
+        toast = tk.Toplevel(master)
+        toast.wm_overrideredirect(True)
+        toast.attributes("-topmost", True)
+        x = master.winfo_rootx() + 50
+        y = master.winfo_rooty() + 50
+        toast.geometry(f"+{x}+{y}")
+        label = tk.Label(toast, text=message, bg="black", fg="white", font=("Roboto", 10))
+        label.pack(ipadx=10, ipady=5)
+        toast.after(3000, toast.destroy)
 
 def start_gui():
     root = tk.Tk()
@@ -331,18 +352,6 @@ def start_gui():
     style.theme_use('clam')
     app = Application(master=root)
     app.mainloop()
-
-def show_toast(master, message):
-    toast = tk.Toplevel(master)
-    toast.wm_overrideredirect(True)
-    toast.attributes("-topmost", True)
-    x = master.winfo_rootx() + 50
-    y = master.winfo_rooty() + 50
-    toast.geometry(f"+{x}+{y}")
-    label = tk.Label(toast, text=message, bg="black", fg="white", font=("Roboto", 10))
-    label.pack(ipadx=10, ipady=5)
-    toast.after(3000, toast.destroy)
-
 
 if __name__ == "__main__":
     start_gui()
