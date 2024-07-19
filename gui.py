@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
@@ -60,7 +61,7 @@ class Application(tk.Frame):
         self.master = master
         self.master.title("Passive Engineering Report Generator")
         self.master.geometry('750x750')
-        self.output_folder = const.FILE_LOCATIONS['output_folder']
+        self.output_folder = os.path.join(os.path.expanduser("~"), "Downloads")
         self.create_widgets()
 
     def create_widgets(self):
@@ -126,7 +127,7 @@ class Application(tk.Frame):
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
         self.select_folder_btn.grid(row=2, column=0, pady=10, padx=20, ipadx=10, ipady=5, sticky=tk.W)
 
-        self.folder_label = ttk.Label(self.scrollable_frame, text="No Folder Selected", font=self.bold_font)
+        self.folder_label = ttk.Label(self.scrollable_frame, text=f"{self.output_folder}", font=self.bold_font)
         self.folder_label.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
 
         self.options_container = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
@@ -191,11 +192,9 @@ class Application(tk.Frame):
         self.output_folder = filedialog.askdirectory()
         if self.output_folder:
             self.folder_label.config(text=self.output_folder)
-            print(f"Selected output folder: {self.output_folder}")
         else:
             self.output_folder = const.FILE_LOCATIONS['output_folder']
             self.folder_label.config(text=self.output_folder)
-            print(f"No folder selected, using default: {self.output_folder}")
 
     def display_project_options(self):
         self.clear_options()

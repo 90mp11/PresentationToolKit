@@ -116,7 +116,6 @@ def objective(project_csv, output_folder, save=True, prs=None):
     pu.create_Objective_slides(df, prs)
     output_path = ""
     if save:
-        print("save triggered")
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_Objective", output_folder)
     return output_path
 
