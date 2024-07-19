@@ -88,6 +88,7 @@ class Application(tk.Frame):
         self.heading_font = Font(family="Roboto", size=14)
         self.default_font = Font(family="Roboto", size=12)
         self.bold_font = Font(family="Roboto", size=12, weight="bold")
+        self.bold_hyperlink_font = Font(family="Roboto", size=12, weight="bold", underline=True)
 
         # Main frame with scrollbar
         self.canvas = tk.Canvas(self.master, bg='#2c3e50')
@@ -113,7 +114,7 @@ class Application(tk.Frame):
 
         # Add the logo image
         self.logo_image = Image.open(resource_path("LOGO.png"))
-        self.logo_image = self.logo_image.resize((154, 50), Image.LANCZOS)  # Correct attribute for Pillow
+        self.logo_image = self.logo_image.resize((154, 50), Image.LANCZOS)
         self.logo_photo = ImageTk.PhotoImage(self.logo_image)
         self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
         self.logo_label.grid(row=0, column=3, pady=(10, 0), padx=20, sticky=tk.E)
@@ -128,7 +129,7 @@ class Application(tk.Frame):
         self.select_folder_btn = ttk.Button(self.scrollable_frame, text="Select Output Folder", command=self.select_output_folder)
         self.select_folder_btn.grid(row=2, column=0, pady=10, padx=20, ipadx=10, ipady=5, sticky=tk.W)
 
-        self.folder_label = ttk.Label(self.scrollable_frame, text=f"{self.output_folder}", font=self.bold_font)
+        self.folder_label = ttk.Label(self.scrollable_frame, text=f"{self.output_folder}", font=self.bold_hyperlink_font, cursor="hand2")
         self.folder_label.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
         self.folder_label.bind("<Button-1>", self.open_output_folder)
 
@@ -163,14 +164,13 @@ class Application(tk.Frame):
 
         # Process and Quit buttons frame
         self.buttons_frame = ttk.Frame(self.scrollable_frame, padding="10 10 10 10")
-        self.buttons_frame.grid(row=5, column=0, columnspan=4, pady=20, padx=0, sticky=tk.EW)
-        self.buttons_frame.columnconfigure(0, weight=1)
+        self.buttons_frame.grid(row=5, column=0, columnspan=4, pady=20, padx=0, sticky=tk.NW)
 
         self.process_btn = ttk.Button(self.buttons_frame, text="Process", command=self.process_file)
-        self.process_btn.grid(row=0, column=0, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
+        self.process_btn.grid(row=0, column=0, padx=10, ipadx=10, ipady=5)
 
         self.quit_btn = ttk.Button(self.buttons_frame, text="QUIT", command=self.master.destroy)
-        self.quit_btn.grid(row=0, column=1, padx=10, ipadx=10, ipady=5, sticky=(tk.E, tk.W))
+        self.quit_btn.grid(row=0, column=1, padx=10, ipadx=10, ipady=5)
 
     def upload_file(self):
         self.file_path = filedialog.askopenfilename()
