@@ -170,9 +170,11 @@ def release_board_slides(project_csv, output_folder, filter='', save=True, prs=N
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
 
+    # Create the initial section for New / Updated docs this period
     pu.create_document_release_section(df, prs, filter, internal=internal)
     output_path = ""
     
+    # Create the section for docs that Impact specific areas this period
     if not internal:
         for imp in impacted:
             pu.create_document_Impacted_section(df, prs, no_section=False, impacted_team=imp, group_filter=filter)
