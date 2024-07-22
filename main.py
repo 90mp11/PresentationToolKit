@@ -45,31 +45,45 @@ def main():
     document_csv = args.document_csv if args.document_csv else const.FILE_LOCATIONS['document_csv']
     output_folder = args.output_folder if args.output_folder else const.FILE_LOCATIONS['output_folder']
 
+    trigger = 1
+
     if args.gui:
+        trigger = 0
         run_gui()
     if args.engineering:
+        trigger = 0
         bu.engineering_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.who:
+        trigger = 0
         bu.who_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.impact:
+        trigger = 0
         bu.impact_presentation(project_csv=project_csv, impact_filter=None, output_folder=output_folder)
     if args.allimpacted:
+        trigger = 0
         bu.allimpacted_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.objective:
+        trigger = 0
         bu.objective_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.onhold:
+        trigger = 0
         bu.onhold_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.projects:
+        trigger = 0
         bu.projects_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.docs:
+        trigger = 0
         bu.docs_presentation(document_csv=document_csv, date_filter=None, output_folder=output_folder)
     if args.document_changes:
+        trigger = 0
         bu.document_changes_presentation(document_csv=document_csv, output_folder=output_folder)
     if args.output_all:
+        trigger = 0
         bu.output_all_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.release:
+        trigger = 0
         bu.release_presentation(document_csv=document_csv, release_group=None, internal=internal, output_folder=output_folder)
-    else:
+    if trigger:
         run_gui()
 
 if __name__ == "__main__":
