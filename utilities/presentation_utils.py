@@ -3,6 +3,7 @@ from pptx.util import Pt, Cm
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from datetime import date, datetime
+import urllib.parse
 import pandas as pd
 import math
 import ast
@@ -61,7 +62,7 @@ def set_document_release_subtitle(slide, heading='new', date='08/09/2023'):
     slide.placeholders[28].text = date
     return
 
-def create_project_button(slide, left, top, status="", contents_text="CONTENT", OVERRIDE=""):
+def create_project_button(slide, left, top, status="", contents_text="CONTENT", OVERRIDE="", hyperlink_string=""):
     if OVERRIDE == "":
         BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
     else:
@@ -103,6 +104,11 @@ def create_project_button(slide, left, top, status="", contents_text="CONTENT", 
     text_box = rounded_rectangle.text_frame
     text_box.text = contents_text
     text_box.vertical_anchor = MSO_ANCHOR.TOP
+
+    if hyperlink_string:
+        # Add the hyperlink to the shape
+        hyperlink = rounded_rectangle.click_action.hyperlink
+        hyperlink.address = hyperlink_string
 
     first = 1
     for paragraph in text_box.paragraphs:
@@ -167,7 +173,9 @@ def populate_column(df, slide, BUTTON_FORMAT, SLIDE_FORMAT, COLUMN_FORMAT, type_
             if not pd.isna(project['Project Summary']):
                 contents_text += f"{project['Project Summary']}"
 
-        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_FORMAT)
+        hyperlink = create_sharepoint_link(location="Project", title=project['Title'])
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_FORMAT, hyperlink_string=hyperlink)
 
 def create_body_slide_three_cols(df_1, df_2, df_3, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
     # Function to take contents of df (dataframe) and output onto a 3 column grid using pre-sets from constants.py
@@ -233,6 +241,8 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
         left = SLIDE_DEF['start_left'] + column * (BUTTON_DEF['rectangle_width'] + SLIDE_DEF['horizontal_spacing'])
         top = SLIDE_DEF['start_top'] + row * (BUTTON_DEF['rectangle_height'] + SLIDE_DEF['vertical_spacing'])
 
+        hyperlink = create_sharepoint_link(location="Project", title=project['Title'])
+
         # Add project details to the rectangle (based on "type_flag" for specific contents)
         if type_flag == 'ProjectOwner':
             contents_text = f"{project['Title']}\n"
@@ -264,8 +274,9 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text = f"Document: {project['Doc Reference']}\n"
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Owner: {project['Primary Owner']}"
+            hyperlink = create_sharepoint_link(location="Document", title=project['Title'])
 
-        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF, hyperlink_string=hyperlink)
 
 def create_body_slide_four_cols_all_projects(df, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
     # Function to take contents of df (dataframe) and output onto a 4 column grid using pre-sets from constants.py
@@ -308,7 +319,9 @@ def create_body_slide_four_cols_all_projects(df, prs, type_flag='ProjectOwner', 
         if type_flag == 'OnHold':
             contents_text = f"{project['Title']}"
 
-        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
+        hyperlink = create_sharepoint_link(location="Project", title=project['Title'])
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF, hyperlink_string=hyperlink)
 
 def create_OnHold_slides(df, prs, no_section=False):
     if no_section == False:
@@ -520,6 +533,9 @@ def create_document_release_section(df, prs, filter='', internal=False):
     for date, documents in grouped:
         title_text = 'Technical Releases'
 
+         # Ensure 'Doc Reference' is of string type and handle NaN values
+        documents['Doc Reference'] = documents['Doc Reference'].fillna('').astype(str)
+
         # Filtering based on 'Doc Reference'
         new_docs = documents[documents['Doc Reference'].str.endswith('NEW')]
         update_docs = documents[~documents['Doc Reference'].str.endswith('NEW')]
@@ -531,6 +547,30 @@ def create_document_release_section(df, prs, filter='', internal=False):
         create_document_release_slide(sorted_update_docs, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='update', full_text=True,internal=internal)
     return
 
+def create_document_release_section_commercial_impacts(df, prs, filter='', internal=False):
+    
+    if filter:
+        df = df.loc[df['Release Group'] == filter]
+
+    grouped = df.groupby(df['Release Group'].fillna('None'))
+
+    for date, documents in grouped:
+        title_text = 'Release Urgency'
+
+        # Ensure 'Release Urgency' is of string type and handle NaN values
+        documents['Release Urgency'] = documents['Release Urgency'].fillna('').astype(str)
+
+        # Filtering based on 'Release Urgency' field - either it's housekeeping (quarterly), or not (monthly)
+        urgency_Others = documents[~documents['Release Urgency'].str.startswith('Housekeeping')]
+        urgency_Housekeeping = documents[documents['Release Urgency'].str.startswith('Housekeeping')]
+
+        sorted_Others = urgency_Others.sort_values(by=['Doc Reference'])
+        sorted_Housekeeping = urgency_Housekeeping.sort_values(by=['Doc Reference'])
+
+        create_document_release_slide(sorted_Others, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='urgency_monthly', full_text=True, internal=internal)
+        create_document_release_slide(sorted_Housekeeping, prs, date, title_text, const.DOCUMENT_BUTTON_CONSTANTS, type_flag='urgency_quarterly', full_text=True, internal=internal)
+    return
+
 def create_document_release_section_multi_filter(df, prs, filter=[], internal=False):
     
     if filter:
@@ -540,6 +580,9 @@ def create_document_release_section_multi_filter(df, prs, filter=[], internal=Fa
 
     for date, documents in grouped:
         title_text = 'Technical Releases'
+
+        # Ensure 'Doc Reference' is of string type and handle NaN values
+        documents['Doc Reference'] = documents['Doc Reference'].fillna('').astype(str)
 
         # Filtering based on 'Doc Reference'
         new_docs = documents[documents['Doc Reference'].str.endswith('NEW')]
@@ -672,7 +715,16 @@ def create_document_release_slide(df, prs, date='08/09/2023', title_text=" ", BU
             contents_text += f"Title: {project['Title']}\n"
             contents_text += f"Detail: {clean_detail}"
 
-        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF)
+        if type_flag in ['urgency_monthly', 'urgency_quarterly']:
+            contents_text = f"Document: {project['Doc Reference']}\n"
+            contents_text += f"Title: {project['Title']}\n"
+            contents_text += f"Summary: {clean_detail}"
+            if not internal:
+                status = ""
+
+        hyperlink = create_sharepoint_link(location="Document", title=project['Title'])
+
+        create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF, hyperlink_string=hyperlink)
     return
 
 def map_impact_to_symbols(impact_str: str):
@@ -686,3 +738,16 @@ def map_impact_to_symbols(impact_str: str):
         impact_symbols[impact] = const.IMPACT_SYMBOL_MAPPING.get(impact, "UNKNOWN")
     
     return impact_symbols
+
+def url_encode_string(input_string):
+    # Use the quote function to encode the input string
+    encoded_string = urllib.parse.quote(input_string)
+    return encoded_string
+
+def create_sharepoint_link(location = "Project", title="Test"):
+    encoded_title = url_encode_string(title)
+    if location == "Project":
+        link = f"https://cityfibreholdings.sharepoint.com/sites/PassiveEngineeringandArchitecture/Lists/Engineering%20Change%20Board/My%20Tickets.aspx?viewid=528f2921%2Db441%2D4617%2D9a90%2D28d029afdd79&FilterField1=LinkTitle&FilterValue1={encoded_title}&FilterType1=Computed"
+    if location == "Document":
+        link = f"https://cityfibreholdings.sharepoint.com/sites/PassiveEngineeringArchitecture/Lists/Document%20Change%20Log/9%20Report%20Output.aspx?FilterField1=LinkTitle&FilterValue1={encoded_title}&FilterType1=Computed"
+    return link

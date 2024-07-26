@@ -189,6 +189,8 @@ DOC_BOARD_TITLES = {
     'update': 'Updated Documents',
     'changes': ' ',
     'release_impact': 'Changes to Review:',
+    'urgency_quarterly': 'Quarterly Releases',
+    'urgency_monthly': 'Monthly Releases',
 }
 
 IMPACT_SYMBOL_MAPPING = {
