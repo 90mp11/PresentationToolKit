@@ -14,6 +14,19 @@ def resource_path(relative_path):
     
     return os.path.join(base_path, relative_path)
 
+def engineering_review_board_presentation(project_csv, output_folder):
+    df = du.create_blank_dataframe(project_csv)
+    prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
+    pu.create_New_slides(df, prs)
+    #PROJECT UPDATES SECTION
+        #SUMMARISE CURRENT PROJECT PROGRESS
+        #HIGHLIGHT KEY MILESTONES
+        #DISCUSS DEVIATIONS FROM PROJECT PLANS
+    #PROJECT STATUS CHANGES
+        #REVIEW AND APPROVE STATUS CHANGES
+        #DISCUSS TIMELINE ADJUSTMENTS & BUDGET IMPACTS
+    pu.save_exit(prs, "PEA_Project_Review_Call_Report", "", output_folder)
+
 def engineering_presentation(project_csv, output_folder):
     count = 0
     for eng in const.ENGINEERS:

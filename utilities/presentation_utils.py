@@ -270,6 +270,11 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
             contents_text += f"Project Summary: {project['Project Summary']}"
 
+        if type_flag == 'NewProjects':
+            contents_text = f"ID: {project['ID']} - {project['Title']}\n"
+            contents_text += f"Owner: {project['Primary Owner']}\n"
+            contents_text += f"Project Summary: {project['Project Summary']}"
+
         if type_flag == 'Release Forecast':
             contents_text = f"Document: {project['Doc Reference']}\n"
             contents_text += f"Title: {project['Title']}\n"
@@ -331,6 +336,15 @@ def create_OnHold_slides(df, prs, no_section=False):
     sorted = on_hold.sort_values(by=['Primary Owner'])
     title_text = "On-Hold Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='OnHold', title_text=title_text, BUTTON_OVERRIDE=const.ONHOLD_BUTTON_CONSTANTS)
+
+def create_New_slides(df, prs, no_section=False):
+    if no_section == False:
+        create_title_slide(prs, f'New Project Requests')
+    #Filter the dataframe to only the OnHold projects
+    on_hold = du.filter_dataframe_by_status(df, 'New')
+    sorted = on_hold.sort_values(by=['Primary Owner'])
+    title_text = "New Projects - " + str(len(on_hold))
+    create_body_slide_four_cols(sorted, prs, type_flag='NewProjects', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
 
 def create_AllProjects_slide(df, prs, filter=""):
     

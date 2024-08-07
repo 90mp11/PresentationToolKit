@@ -121,6 +121,22 @@ ONHOLD_BUTTON_CONSTANTS = {
     }
 }
 
+NEW_PROJECT_BUTTON_CONSTANTS = {
+    'rectangle_width': Cm(7.8),
+    'rectangle_height': Cm(4.4),
+    'font_size': Pt(11),
+    'fill': ThemeColors.BLUE,
+    'font_colour': ThemeColors.BLACK,
+    'border': ThemeColors.BLUE,
+    'fill_brightness': 0.8,
+    'status_colors': {
+        'Open': ThemeColors.BLUE,
+        'On Hold': ThemeColors.BLUE,
+        'New': ThemeColors.BLUE,
+        'Blocked': ThemeColors.BLUE,
+    }
+}
+
 FOUR_COL_SLIDE_CONSTANTS = {
     'start_left': Cm(0.65),
     'start_top': Cm(2),

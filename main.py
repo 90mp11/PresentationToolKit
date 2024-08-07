@@ -38,6 +38,7 @@ def main():
     parser.add_argument("--document_csv", type=str, help="Specify the document CSV file")
     parser.add_argument("--output_folder", type=str, help="Specify the output folder")
     parser.add_argument("--gui", action="store_true", help="Launch the graphical user interface")
+    parser.add_argument("--projectBoard", action="store_true", help="Save the Engineering Project Board slides")
 
     args = parser.parse_args()
     internal = args.internal
@@ -87,6 +88,9 @@ def main():
         gui_trigger = 0
         release_group = input("Release Group: ")
         bu.release_presentation(document_csv=document_csv, release_group=release_group, internal=internal, output_folder=output_folder)
+    if args.projectBoard:
+        gui_trigger = 0
+        bu.engineering_review_board_presentation(project_csv=project_csv, output_folder=output_folder)
     if gui_trigger:
         run_gui()
 
