@@ -185,7 +185,7 @@ def release_board_slides(project_csv, output_folder, filter='', save=True, prs=N
 
     # Create the initial section for New / Updated docs this period
     pu.create_document_release_section(df, prs, filter, internal=internal)
-    
+    pu.create_title_slide(prs, f'Release Urgency')
     pu.create_document_release_section_commercial_impacts(df, prs, filter, internal=internal)
     
     output_path = ""
