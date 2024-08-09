@@ -281,6 +281,16 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text += f"Owner: {project['Primary Owner']}"
             hyperlink = create_sharepoint_link(location="Document", title=project['Title'])
 
+        if type_flag == 'ContactLog':
+            contents_text = f"{project['Title']}\n"
+            contents_text += f"Raised By: {project['RaisedBy']}\n"
+            contents_text += f"Created: {project['OriginalCreationDate']}\n"
+            contents_text += f"Age: {du.calculate_business_days_age(project['OriginalCreationDate'])} || {du.calculate_total_age(project['OriginalCreationDate'])}\n"
+            contents_text += f"Claimed: {project['Claimed?']}"
+            
+            hyperlink = project['Teams_Link']
+            #TODO: write a ContactLog version of this: hyperlink = create_sharepoint_link(location="Document", title=project['Title'])
+
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF, hyperlink_string=hyperlink)
 
 def create_body_slide_four_cols_all_projects(df, prs, type_flag='ProjectOwner', title_text="", BUTTON_OVERRIDE=""):
@@ -345,6 +355,25 @@ def create_New_slides(df, prs, no_section=False):
     sorted = on_hold.sort_values(by=['Primary Owner'])
     title_text = "New Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='NewProjects', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
+
+def create_open_contact_slides(df, prs, no_section=False):
+    if no_section == False:
+        create_title_slide(prs, f'Open Requests')
+    #Filter the dataframe to only the OnHold projects
+    
+    df_open_tickets = du.filter_dataframe_by_status(df, 'Pending') 
+
+    for engineer in df_open_tickets['AssignedTo'].unique():
+        # Filter the dataframe for this specific engineer's open tickets
+        engineer_tickets = df[df['AssignedTo'] == engineer]
+        
+        # Sort the tickets by ID or any other relevant field
+        sorted_tickets = engineer_tickets.sort_values(by=['ID'])
+        
+        # Create a slide with the engineer's name and their open tickets
+        title_text = f"Open Tickets for {engineer} - {len(engineer_tickets)}"
+        create_body_slide_four_cols(sorted_tickets, prs, type_flag='ContactLog', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
+    return
 
 def create_AllProjects_slide(df, prs, filter=""):
     

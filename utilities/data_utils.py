@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
@@ -21,6 +22,10 @@ def filter_dataframe_by_release_group(dataframe, group):
 
 def filter_dataframe_by_staging(dataframe, staging):
     filtered_df = dataframe[dataframe['Staging'].apply(lambda statuses: staging in statuses)]
+    return filtered_df
+
+def filter_dataframe_by_contact_owner(dataframe, owner):
+    filtered_df = dataframe[dataframe['AssignedTo'].apply(lambda owners: owner in owners)]
     return filtered_df
 
 def combine_dataframe(df1, df2):
@@ -95,3 +100,70 @@ def convert_html_to_text_with_newlines(html_str):
     final_text = final_text.replace("\r\n", "\n")
 
     return final_text.strip()  # Strip removes leading/trailing white spaces
+
+def calculate_total_age(creation_date_str, reference_date_str=None):
+    """
+    Calculate the total age in days from the creation date to the reference date.
+    
+    Parameters:
+    - creation_date_str: The creation date as a string (format: '%Y-%m-%d').
+    - reference_date_str: The reference date as a string (format: '%Y-%m-%d'). Defaults to today.
+    
+    Returns:
+    - int: Total age in days.
+    """
+    # Convert the creation date string to a datetime object
+    creation_date = pd.to_datetime(creation_date_str, dayfirst=True)
+    
+    # If no reference date is provided, use the current date
+    if reference_date_str is None:
+        reference_date = datetime.now()
+    else:
+        reference_date = pd.to_datetime(reference_date_str, dayfirst=True)
+    
+    # Calculate the difference in days
+    total_age_days = (reference_date - creation_date).days
+
+    return total_age_days
+
+def calculate_business_days_age(creation_date_str, reference_date_str=None):
+    """
+    Calculate the number of business days from the creation date to the reference date,
+    accounting for tickets opened on weekends.
+    
+    Parameters:
+    - creation_date_str: The creation date as a string (format: '%Y-%m-%d').
+    - reference_date_str: The reference date as a string (format: '%Y-%m-%d'). Defaults to today.
+    
+    Returns:
+    - int: Number of business days.
+    """
+    # Convert the creation date string to a datetime object
+    creation_date = pd.to_datetime(creation_date_str, dayfirst=True)
+    
+    # If no reference date is provided, use the current date
+    if reference_date_str is None:
+        reference_date = datetime.now()
+    else:
+        reference_date = pd.to_datetime(reference_date_str, dayfirst=True)
+    
+    # If the ticket was created on a weekend, adjust the creation date to the following Monday
+    if creation_date.weekday() >= 5:  # 5 is Saturday, 6 is Sunday
+        creation_date += timedelta(days=(7 - creation_date.weekday()))
+    
+    # Generate a range of all dates between creation_date and reference_date
+    all_days = pd.date_range(start=creation_date, end=reference_date, freq='B')  # 'B' stands for business days
+
+    # Calculate the number of business days
+    business_days = len(all_days)
+    
+    # Adjust for partial days if the ticket was opened or closed outside of business hours
+    if creation_date.time() > datetime.strptime("09:00:00", "%H:%M:%S").time():
+        business_days -= 1
+    if reference_date.time() < datetime.strptime("17:00:00", "%H:%M:%S").time():
+        business_days -= 1
+    
+    # Ensure the count doesn't go below zero
+    business_days = max(business_days, 0)
+    
+    return business_days
