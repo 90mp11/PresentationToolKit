@@ -182,6 +182,8 @@ class Application(tk.Frame):
                 df = pd.read_csv(self.file_path)
                 if 'Project Updates' in df.columns:
                     self.display_project_options()
+                if 'ContactType' in df.columns:
+                    self.display_contact_options()
                 elif 'Doc Reference' in df.columns:
                     self.display_document_options()
                 else:
@@ -213,6 +215,19 @@ class Application(tk.Frame):
         for i, (text, mode, tooltip) in enumerate(project_options):
             var = tk.BooleanVar(value=False)
             cb = ttk.Checkbutton(self.options_container, text=text, variable=var, command=self.show_impacted_areas)
+            cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
+            self.option_vars[mode] = var
+            self.options.append(cb)
+            ToolTip(cb, tooltip)
+
+    def display_contact_options(self):
+        self.clear_options()
+        document_options = [
+            ("Contact Log Report", "contact", "Generates the Contact Log Report")
+        ]
+        for i, (text, mode, tooltip) in enumerate(document_options):
+            var = tk.BooleanVar(value=False)
+            cb = ttk.Checkbutton(self.options_container, text=text, variable=var)
             cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.option_vars[mode] = var
             self.options.append(cb)
@@ -343,6 +358,9 @@ class Application(tk.Frame):
                 files_created += 1
             if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
                 bu.document_changes_presentation(self.file_path, self.output_folder)
+                files_created += 1
+            if self.option_vars.get('contact', tk.BooleanVar(value=False)).get():
+                bu.contact_report_presentation(self.file_path, self.output_folder)
                 files_created += 1
 
             # Show toast notification

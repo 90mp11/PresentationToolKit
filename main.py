@@ -36,14 +36,17 @@ def main():
     parser.add_argument("--internal", action="store_true", help="Sets a flag for Internal use only - Outputs the ReleaseBoard Impact Report in a single presentation")
     parser.add_argument("--project_csv", type=str, help="Specify the project CSV file")
     parser.add_argument("--document_csv", type=str, help="Specify the document CSV file")
+    parser.add_argument("--contact_csv", type=str, help="Specify the document CSV file")
     parser.add_argument("--output_folder", type=str, help="Specify the output folder")
     parser.add_argument("--gui", action="store_true", help="Launch the graphical user interface")
     parser.add_argument("--projectBoard", action="store_true", help="Save the Engineering Project Board slides")
+    parser.add_argument("--contact", action="store_true", help="Produce the ContactBoard Report")
 
     args = parser.parse_args()
     internal = args.internal
     project_csv = args.project_csv if args.project_csv else const.FILE_LOCATIONS['project_csv']
     document_csv = args.document_csv if args.document_csv else const.FILE_LOCATIONS['document_csv']
+    contact_csv = args.contact_csv if args.contact_csv else const.FILE_LOCATIONS['contact_csv']
     output_folder = args.output_folder if args.output_folder else const.FILE_LOCATIONS['output_folder']
 
     gui_trigger = 1
@@ -91,6 +94,8 @@ def main():
     if args.projectBoard:
         gui_trigger = 0
         bu.engineering_review_board_presentation(project_csv=project_csv, output_folder=output_folder)
+    if args.contact:
+        gui_trigger = 0
     if gui_trigger:
         run_gui()
 

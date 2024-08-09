@@ -14,10 +14,24 @@ def resource_path(relative_path):
     
     return os.path.join(base_path, relative_path)
 
+def contact_report_presentation(contact_csv, output_folder):
+    df = du.create_blank_dataframe(contact_csv)
+    prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
+    #TODO:
+    #PROJECT UPDATES SECTION
+        #SUMMARISE CURRENT PROJECT PROGRESS
+        #HIGHLIGHT KEY MILESTONES
+        #DISCUSS DEVIATIONS FROM PROJECT PLANS
+    #PROJECT STATUS CHANGES
+        #REVIEW AND APPROVE STATUS CHANGES
+        #DISCUSS TIMELINE ADJUSTMENTS & BUDGET IMPACTS
+    pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
+
 def engineering_review_board_presentation(project_csv, output_folder):
     df = du.create_blank_dataframe(project_csv)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_New_slides(df, prs)
+    #TODO:
     #PROJECT UPDATES SECTION
         #SUMMARISE CURRENT PROJECT PROGRESS
         #HIGHLIGHT KEY MILESTONES
@@ -188,6 +202,9 @@ def release_board_slides(project_csv, output_folder, filter='', save=True, prs=N
     pu.create_title_slide(prs, f'Release Urgency')
     pu.create_document_release_section_commercial_impacts(df, prs, filter, internal=internal)
     
+    #TODO: Have slides split over multiple pages depending on the number of buttons
+    #TODO: Have slides merge to single if small enough number of buttons
+
     output_path = ""
     
     # Create the section for docs that Impact specific areas this period
