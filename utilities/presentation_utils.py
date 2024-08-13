@@ -433,6 +433,35 @@ def create_engineer_grouped_resolved_items_chart_slide(df, prs):
    
     return prs
 
+def create_resolved_items_per_month_table_slide(df, prs):
+    """
+    Create a slide with a table showing the number of resolved items per engineer per month.
+    
+    df: The dataframe containing the contact data
+    prs: The PowerPoint presentation object
+    """
+    # Add a new slide for Resolved Items Per Month
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, "Resolved Items Per Month")
+
+    # Add a table to the slide
+    rows = df.shape[0] + 1  # Include header row
+    cols = 3  # Closed by, YearMonth, ResolvedCount
+    table = slide.shapes.add_table(rows, cols, Cm(2), Cm(2), Cm(24), Cm(12)).table
+
+    # Set column headers
+    table.cell(0, 0).text = "Closed by"
+    table.cell(0, 1).text = "Month"
+    table.cell(0, 2).text = "Resolved Items"
+
+    # Fill in the table with data
+    for i, (index, row) in enumerate(df.iterrows(), start=1):
+        table.cell(i, 0).text = str(row['Closed by'])
+        table.cell(i, 1).text = str(row['YearMonth'])
+        table.cell(i, 2).text = str(row['ResolvedCount'])
+   
+    return prs
+
 def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
     Create a slide that shows the number of resolved items per engineer per month within a specific date range.
@@ -459,28 +488,9 @@ def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2
     # Group by 'Closed by' and 'YearMonth' and count the number of resolved items
     resolved_items_per_month = resolved_df.groupby(['Closed by', 'YearMonth']).size().reset_index(name='ResolvedCount')
 
-    # Add a new slide for Resolved Items Per Month
-    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    title = slide.shapes.title
-    title.text = "Resolved Items Per Month"
+    create_resolved_items_per_month_table_slide(resolved_items_per_month, prs)
 
-    # Add a table to the slide
-    rows = resolved_items_per_month.shape[0] + 1  # Include header row
-    cols = 3  # Closed by, YearMonth, ResolvedCount
-    table = slide.shapes.add_table(rows, cols, Cm(2), Cm(2), Cm(24), Cm(12)).table
-
-    # Set column headers
-    table.cell(0, 0).text = "Closed by"
-    table.cell(0, 1).text = "Month"
-    table.cell(0, 2).text = "Resolved Items"
-
-    # Fill in the table with data
-    for i, (index, row) in enumerate(resolved_items_per_month.iterrows(), start=1):
-        table.cell(i, 0).text = str(row['Closed by'])
-        table.cell(i, 1).text = str(row['YearMonth'])
-        table.cell(i, 2).text = str(row['ResolvedCount'])
-
-    #Create the Graph Pages
+    #Create the Graph Pages TODO: pass on the output_path to save the graphs directly into (for the GUI implementation)
     create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
     create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
     create_engineer_grouped_resolved_items_chart_slide(resolved_items_per_month, prs)
