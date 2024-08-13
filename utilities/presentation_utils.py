@@ -379,6 +379,74 @@ def create_open_and_onhold_contact_chart(df, prs, no_section=False):
 
     return
 
+def create_resolved_items_per_month_chart_slide(df, prs):
+    """
+    Create a slide with a stacked bar chart showing the number of resolved items per engineer per month.
+    
+    df: The dataframe containing the contact data
+    prs: The PowerPoint presentation object
+    """
+    # Plot the chart and save it as an image
+    chart_image_path = 'resolved_items_chart.png'
+    gu.plot_resolved_items_per_month(df, chart_image_path)
+
+    # Add a new slide for the chart
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, 'Resolved Items Per Month')
+    insert_chart_into_slide(prs, slide, chart_image_path)
+   
+    return prs
+
+def create_resolved_items_per_month_slide(df, prs, start_date='2024-01-01', end_date='2024-12-31'):
+    """
+    Create a slide that shows the number of resolved items per engineer per month within a specific date range.
+    
+    df: The dataframe containing the contact data
+    prs: The PowerPoint presentation object
+    start_date: The start of the date range to filter the data (default is '2024-01-01')
+    end_date: The end of the date range to filter the data (default is '2024-12-31')
+    """
+    # Convert start_date and end_date to datetime
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    
+    # Filter for rows where Status is 'Resolved' and within the date range
+    resolved_df = df[(df['Status'] == 'Resolved') & 
+                     (pd.to_datetime(df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))].copy()
+
+    # Ensure 'Completed Time' is treated as a datetime object
+    resolved_df['Completed Time'] = pd.to_datetime(resolved_df['Completed Time'], errors='coerce', dayfirst=True)
+
+    # Extract Year and Month from 'Completed Time'
+    resolved_df['YearMonth'] = resolved_df['Completed Time'].dt.to_period('M')
+
+    # Group by 'Closed by' and 'YearMonth' and count the number of resolved items
+    resolved_items_per_month = resolved_df.groupby(['Closed by', 'YearMonth']).size().reset_index(name='ResolvedCount')
+
+    # Add a new slide for Resolved Items Per Month
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    title = slide.shapes.title
+    title.text = "Resolved Items Per Month"
+
+    # Add a table to the slide
+    rows = resolved_items_per_month.shape[0] + 1  # Include header row
+    cols = 3  # Closed by, YearMonth, ResolvedCount
+    table = slide.shapes.add_table(rows, cols, Cm(2), Cm(2), Cm(24), Cm(12)).table
+
+    # Set column headers
+    table.cell(0, 0).text = "Closed by"
+    table.cell(0, 1).text = "Month"
+    table.cell(0, 2).text = "Resolved Items"
+
+    # Fill in the table with data
+    for i, (index, row) in enumerate(resolved_items_per_month.iterrows(), start=1):
+        table.cell(i, 0).text = str(row['Closed by'])
+        table.cell(i, 1).text = str(row['YearMonth'])
+        table.cell(i, 2).text = str(row['ResolvedCount'])
+
+    create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
+
+    return prs
 
 def create_open_contact_slides(df, prs, no_section=False):
     if no_section == False:

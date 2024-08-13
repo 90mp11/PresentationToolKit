@@ -66,6 +66,26 @@ def create_age_bar_chart(df, output_path='age_bar_chart.png'):
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
 
+def plot_resolved_items_per_month(df, output_path='resolved_month_chart.png'):
+    """
+    Plots a stacked bar chart showing the number of resolved items per engineer per month.
+    
+    df: DataFrame with resolved items per month per engineer.
+    """
+    # Pivot the data to get engineers (Closed by) as columns and YearMonth as rows
+    pivot_table = df.pivot(index='YearMonth', columns='Closed by', values='ResolvedCount').fillna(0)
+
+    # Plot a stacked bar chart
+    pivot_table.plot(kind='bar', stacked=True, figsize=(10, 7), cmap='tab20')
+    
+    plt.title('Resolved Items Per Month by Engineer (2024)')
+    plt.xlabel('Month')
+    plt.ylabel('Number of Resolved Items')
+    plt.legend(title='Engineer', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+
 # Example usage of the refactored functions
 if __name__ == "__main__":
     csv_file_path = './raw/PROJECT.csv'
