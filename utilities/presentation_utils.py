@@ -397,6 +397,24 @@ def create_resolved_items_per_month_chart_slide(df, prs):
    
     return prs
 
+def create_grouped_resolved_items_per_month_chart_slide(df, prs):
+    """
+    Create a slide with a grouped bar chart showing the number of resolved items per engineer per month.
+    
+    df: The dataframe containing the contact data
+    prs: The PowerPoint presentation object
+    """
+    # Plot the chart and save it as an image
+    chart_image_path = 'grouped_resolved_items_chart.png'
+    gu.plot_grouped_resolved_items_per_month(df, chart_image_path)
+
+    # Add a new slide for the chart
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, 'Resolved Items Per Month (Grouped)')
+    insert_chart_into_slide(prs, slide, chart_image_path)
+   
+    return prs
+
 def create_resolved_items_per_month_slide(df, prs, start_date='2024-01-01', end_date='2024-12-31'):
     """
     Create a slide that shows the number of resolved items per engineer per month within a specific date range.
@@ -445,8 +463,10 @@ def create_resolved_items_per_month_slide(df, prs, start_date='2024-01-01', end_
         table.cell(i, 2).text = str(row['ResolvedCount'])
 
     create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
+    create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
 
     return prs
+    
 
 def create_open_contact_slides(df, prs, no_section=False):
     if no_section == False:

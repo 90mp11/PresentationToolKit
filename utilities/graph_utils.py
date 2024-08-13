@@ -86,6 +86,27 @@ def plot_resolved_items_per_month(df, output_path='resolved_month_chart.png'):
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
 
+def plot_grouped_resolved_items_per_month(df, output_path='grouped_resolved_month_chart.png'):
+    """
+    Plots a grouped bar chart showing the number of resolved items per engineer per month.
+    
+    df: DataFrame with resolved items per month per engineer.
+    output_path: Path to save the generated chart image.
+    """
+    # Pivot the data to get engineers (Closed by) as columns and YearMonth as rows
+    pivot_table = df.pivot(index='YearMonth', columns='Closed by', values='ResolvedCount').fillna(0)
+
+    # Plot a grouped bar chart
+    ax = pivot_table.plot(kind='bar', stacked=False, figsize=(10, 7), cmap='tab20')
+
+    plt.title('Resolved Items Per Month by Engineer (Grouped)')
+    plt.xlabel('Month')
+    plt.ylabel('Number of Resolved Items')
+    plt.legend(title='Engineer', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+
 # Example usage of the refactored functions
 if __name__ == "__main__":
     csv_file_path = './raw/PROJECT.csv'
