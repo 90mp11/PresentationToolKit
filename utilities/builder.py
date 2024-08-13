@@ -18,16 +18,14 @@ def contact_report_presentation(contact_csv, output_folder):
     df = du.create_blank_dataframe(contact_csv)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
 
-    pu.create_open_contact_slides(df, prs)
-    pu.create_open_and_onhold_contact_chart(df, prs)
-    pu.create_resolved_items_per_month_slide(df, prs)
+    #pu.create_open_contact_slides(df, prs)
+    pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
+    pu.create_resolved_items_per_month_slides(df, prs, output_folder)
     # TODO:
     # GRAPH THE NUMBER OF RESOLVED TICKETS PER MONTH
     # NUMBER OF OPEN CONTACT TICKETS PER ENGINEER ON ONE PAGE
     # TIME TO CLAIM TICKET BY ENGINEER
     pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
-
-
 
 def engineering_review_board_presentation(project_csv, output_folder):
     df = du.create_blank_dataframe(project_csv)

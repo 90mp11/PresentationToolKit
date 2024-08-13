@@ -356,7 +356,7 @@ def create_New_slides(df, prs, no_section=False):
     title_text = "New Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='NewProjects', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
 
-def create_open_and_onhold_contact_chart(df, prs, no_section=False):
+def create_open_and_onhold_contact_chart(df, prs, output_folder, no_section=False):
     if no_section == False:
         create_title_slide(prs, f'Open and On-Hold Tickets Report')
 
@@ -415,7 +415,25 @@ def create_grouped_resolved_items_per_month_chart_slide(df, prs):
    
     return prs
 
-def create_resolved_items_per_month_slide(df, prs, start_date='2024-01-01', end_date='2024-12-31'):
+def create_engineer_grouped_resolved_items_chart_slide(df, prs):
+    """
+    Create a slide with a bar chart grouped by engineer, showing the number of resolved items per engineer per month.
+    
+    df: The dataframe containing the contact data
+    prs: The PowerPoint presentation object
+    """
+    # Plot the chart and save it as an image
+    chart_image_path = 'engineer_grouped_resolved_chart.png'
+    gu.plot_engineer_grouped_resolved_items(df, chart_image_path)
+
+    # Add a new slide for the chart
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, 'Resolved Items Per Engineer by Month (Grouped)')
+    insert_chart_into_slide(prs, slide, chart_image_path)
+   
+    return prs
+
+def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
     Create a slide that shows the number of resolved items per engineer per month within a specific date range.
     
@@ -462,8 +480,10 @@ def create_resolved_items_per_month_slide(df, prs, start_date='2024-01-01', end_
         table.cell(i, 1).text = str(row['YearMonth'])
         table.cell(i, 2).text = str(row['ResolvedCount'])
 
+    #Create the Graph Pages
     create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
     create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
+    create_engineer_grouped_resolved_items_chart_slide(resolved_items_per_month, prs)
 
     return prs
     
@@ -913,3 +933,9 @@ def insert_chart_into_slide(prs, slide, chart_path):
     top = Cm(2.2)
     height = Cm(15.43)  # Set the height and let width auto-adjust
     slide.shapes.add_picture(chart_path, left, top, height=height)
+    
+    # Clean up the image file
+    if os.path.exists(chart_path):
+        os.remove(chart_path)
+
+    return prs
