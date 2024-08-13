@@ -488,6 +488,8 @@ def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2
     # Group by 'Closed by' and 'YearMonth' and count the number of resolved items
     resolved_items_per_month = resolved_df.groupby(['Closed by', 'YearMonth']).size().reset_index(name='ResolvedCount')
 
+    #TODO: consider moving these slide creators back to builder.py and moving this logic into data_utils to create a cleaner flow
+
     create_resolved_items_per_month_table_slide(resolved_items_per_month, prs)
 
     #Create the Graph Pages TODO: pass on the output_path to save the graphs directly into (for the GUI implementation)
