@@ -2,6 +2,7 @@ from pptx import Presentation
 from pptx.util import Pt, Cm
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
+import utilities.graph_utils as gu
 from datetime import date, datetime
 import urllib.parse
 import pandas as pd
@@ -62,7 +63,7 @@ def set_document_release_subtitle(slide, heading='new', date='08/09/2023'):
     slide.placeholders[28].text = date
     return
 
-def create_project_button(slide, left, top, status="", contents_text="CONTENT", OVERRIDE="", hyperlink_string=""):
+def create_project_button(slide, left, top, status="", contents_text="CONTENT", OVERRIDE="", hyperlink_string=None):
     if OVERRIDE == "":
         BUTTON_DEF = const.PROJECT_BUTTON_CONSTANTS
     else:
@@ -287,8 +288,7 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
             contents_text += f"Created: {project['OriginalCreationDate']}\n"
             contents_text += f"Age: {du.calculate_business_days_age(project['OriginalCreationDate'])} || {du.calculate_total_age(project['OriginalCreationDate'])}\n"
             contents_text += f"Claimed: {project['Claimed?']}"
-            
-            hyperlink = project['Teams_Link']
+            hyperlink = None
             #TODO: write a ContactLog version of this: hyperlink = create_sharepoint_link(location="Document", title=project['Title'])
 
         create_project_button(slide, left, top, status, contents_text, OVERRIDE=BUTTON_DEF, hyperlink_string=hyperlink)
@@ -356,23 +356,47 @@ def create_New_slides(df, prs, no_section=False):
     title_text = "New Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='NewProjects', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
 
+def create_open_and_onhold_contact_chart(df, prs, no_section=False):
+    if no_section == False:
+        create_title_slide(prs, f'Open and On-Hold Tickets Report')
+
+    # Use the modified filter function to get both 'Pending' and 'On Hold' tickets
+    df_combined_tickets = du.filter_dataframe_by_status(df, ['Pending', 'On Hold'])
+
+    # Calculate and group the ages by AssignedTo
+    grouped_df = du.calculate_and_group_ticket_ages(df_combined_tickets)
+
+    # Create the bar chart and save it as an image
+    chart_path = 'age_bar_chart.png'
+    gu.create_age_bar_chart(grouped_df, chart_path)
+
+    # Create a new slide for the chart
+    chart_slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Use an appropriate slide layout
+    set_title(chart_slide, 'Age of Open Tickets')
+
+    # Insert the chart into the new slide
+    insert_chart_into_slide(prs, chart_slide, chart_path)
+
+    return
+
+
 def create_open_contact_slides(df, prs, no_section=False):
     if no_section == False:
         create_title_slide(prs, f'Open Requests')
     #Filter the dataframe to only the OnHold projects
     
-    df_open_tickets = du.filter_dataframe_by_status(df, 'Pending') 
+    df_open_tickets = du.filter_dataframe_by_status(df, ['Pending', 'On Hold']) 
 
     for engineer in df_open_tickets['AssignedTo'].unique():
         # Filter the dataframe for this specific engineer's open tickets
-        engineer_tickets = df[df['AssignedTo'] == engineer]
+        engineer_tickets = df_open_tickets[df_open_tickets['AssignedTo'] == engineer]
         
         # Sort the tickets by ID or any other relevant field
         sorted_tickets = engineer_tickets.sort_values(by=['ID'])
         
         # Create a slide with the engineer's name and their open tickets
         title_text = f"Open Tickets for {engineer} - {len(engineer_tickets)}"
-        create_body_slide_four_cols(sorted_tickets, prs, type_flag='ContactLog', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
+        create_body_slide_four_cols(sorted_tickets, prs, type_flag='ContactLog', title_text=title_text, BUTTON_OVERRIDE=const.CONTACT_BUTTON_CONSTANTS)
     return
 
 def create_AllProjects_slide(df, prs, filter=""):
@@ -794,3 +818,10 @@ def create_sharepoint_link(location = "Project", title="Test"):
     if location == "Document":
         link = f"https://cityfibreholdings.sharepoint.com/sites/PassiveEngineeringArchitecture/Lists/Document%20Change%20Log/9%20Report%20Output.aspx?FilterField1=LinkTitle&FilterValue1={encoded_title}&FilterType1=Computed"
     return link
+
+def insert_chart_into_slide(prs, slide, chart_path):
+    # Add the image to the slide
+    left = Cm(1.43)
+    top = Cm(2.2)
+    height = Cm(15.43)  # Set the height and let width auto-adjust
+    slide.shapes.add_picture(chart_path, left, top, height=height)

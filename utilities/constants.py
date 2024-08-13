@@ -137,6 +137,22 @@ NEW_PROJECT_BUTTON_CONSTANTS = {
     }
 }
 
+CONTACT_BUTTON_CONSTANTS = {
+    'rectangle_width': Cm(7.8),
+    'rectangle_height': Cm(3.3),
+    'font_size': Pt(11),
+    'fill': ThemeColors.PINK,
+    'font_colour': ThemeColors.BLACK,
+    'border': ThemeColors.PINK,
+    'fill_brightness': 0.8,
+    'status_colors': {
+        'Pending': ThemeColors.BLUE,
+        'On Hold': ThemeColors.PURPLE,
+        'New': ThemeColors.PURPLE,
+        'Blocked': ThemeColors.ORANGE
+    }
+}
+
 FOUR_COL_SLIDE_CONSTANTS = {
     'start_left': Cm(0.65),
     'start_top': Cm(2),

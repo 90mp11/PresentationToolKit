@@ -12,8 +12,14 @@ def filter_dataframe_by_team(dataframe, team_name):
     filtered_df = dataframe[dataframe['Impacted Teams'].apply(lambda teams: team_name in teams)]
     return filtered_df
 
-def filter_dataframe_by_status(dataframe, status):
-    filtered_df = dataframe[dataframe['Status'].apply(lambda statuses: status in statuses)]
+def filter_dataframe_by_status(dataframe, statuses):
+    if isinstance(statuses, str):
+        # If a single status is passed as a string, convert it to a list
+        statuses = [statuses]
+    
+    # Filter the dataframe for rows where the Status column contains any of the specified statuses
+    filtered_df = dataframe[dataframe['Status'].apply(lambda status: any(s in status for s in statuses))]
+    
     return filtered_df
 
 def filter_dataframe_by_release_group(dataframe, group):
@@ -167,3 +173,24 @@ def calculate_business_days_age(creation_date_str, reference_date_str=None):
     business_days = max(business_days, 0)
     
     return business_days
+
+def calculate_and_group_ticket_ages(df):
+    # Ensure we are working on a copy of the DataFrame
+    df = df.copy()
+
+    # Ensure the Age_BusinessDays column is calculated
+    df['Age_BusinessDays'] = df['OriginalCreationDate'].apply(lambda x: calculate_business_days_age(x))
+
+    # Group by AssignedTo and calculate both the sum of Age_BusinessDays and the count of tickets
+    grouped_df = df.groupby('AssignedTo').agg({
+        'Age_BusinessDays': 'sum',  # Sum of business days
+        'OriginalCreationDate': 'count'  # Count of tickets
+    }).reset_index()
+
+    # Rename 'OriginalCreationDate' to 'TicketCount' for clarity
+    grouped_df = grouped_df.rename(columns={'OriginalCreationDate': 'TicketCount'})
+
+    # Sort the grouped data by Age_BusinessDays in descending order
+    sorted_df = grouped_df.sort_values(by='Age_BusinessDays', ascending=False)
+
+    return sorted_df
