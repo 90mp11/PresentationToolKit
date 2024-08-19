@@ -128,6 +128,36 @@ def plot_engineer_grouped_resolved_items(df, output_path='engineer_grouped_resol
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
 
+def plot_resolution_time_by_engineer(df, output_path='resolution_time_chart.png'):
+    """
+    Plots a bar chart showing the average resolution time by engineer.
+    
+    df: DataFrame with columns ['AssignedTo', 'TimeToResolve_BusinessDays'].
+    output_path: Path to save the generated chart image.
+    """
+    # Group by engineer and calculate the average resolution time
+    grouped_df = df.groupby('AssignedTo')['TimeToResolve_BusinessDays'].mean().reset_index()
+    
+    # Sort the data for better visualization
+    grouped_df = grouped_df.sort_values(by='TimeToResolve_BusinessDays', ascending=False)
+
+    # Plot the bar chart
+    plt.figure(figsize=(10, 6))
+    bars = plt.barh(grouped_df['AssignedTo'], grouped_df['TimeToResolve_BusinessDays'], color='skyblue')
+    plt.xlabel('Average Resolution Time in Business Days')
+    plt.ylabel('Engineer')
+    plt.title('Average Ticket Resolution Time by Engineer')
+    plt.gca().invert_yaxis()  # Invert the y-axis to have the longest bar on top
+    
+    # Add labels on each bar
+    for bar in bars:
+        width = bar.get_width()
+        plt.text(width, bar.get_y() + bar.get_height()/2, f'{width:.1f} days', 
+                 va='center', ha='left', fontsize=10, color='black')
+    
+    # Save the chart as an image
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
 
 # Example usage of the refactored functions
 if __name__ == "__main__":

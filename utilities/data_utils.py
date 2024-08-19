@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 import html
+from typing import Union, List
 
 def create_blank_dataframe(csv_file='./raw/DATA.csv'):
     df = pd.read_csv(csv_file)
@@ -60,12 +61,6 @@ def impacted_teams_list(df):
     unique_teams_list = list(unique_teams)
 
     return (unique_teams_list)
-
-from bs4 import BeautifulSoup
-import html
-
-from bs4 import BeautifulSoup
-import html
 
 def convert_html_to_text_with_newlines(html_str):
     """
@@ -194,3 +189,61 @@ def calculate_and_group_ticket_ages(df):
     sorted_df = grouped_df.sort_values(by='Age_BusinessDays', ascending=False)
 
     return sorted_df
+
+import pandas as pd
+from typing import Union, List
+
+def filter_by_lead_team(df: pd.DataFrame, teams: Union[str, List[str]] = None) -> pd.DataFrame:
+    """
+    Filters the DataFrame to include only rows where the 'Lead Team' column
+    matches the specified values. Defaults to 'Passive Engineering' and 'Regional Technical Leads'
+    if no teams are provided.
+    
+    Parameters:
+    df (pd.DataFrame): The input DataFrame to filter.
+    teams (Union[str, List[str]], optional): A string or list of strings specifying the teams to filter by.
+                                            Defaults to ['Passive Engineering', 'Regional Technical Leads'].
+    
+    Returns:
+    pd.DataFrame: The original DataFrame if 'Lead Team' column is not found,
+                  otherwise a new DataFrame filtered by the specified 'Lead Team' values.
+    """
+    # Check if 'Lead Team' column exists
+    if 'Lead Team' not in df.columns:
+        print("Warning: 'Lead Team' column not found. Returning the original DataFrame.")
+        return df
+    
+    # Set default teams if none are provided
+    if teams is None:
+        teams = ["Passive Engineering", "Regional Technical Leads"]
+    
+    # Ensure that teams is always a list
+    if isinstance(teams, str):
+        teams = [teams]
+    
+    # Filter the DataFrame
+    filtered_df = df[df['Lead Team'].isin(teams)]
+    
+    return filtered_df
+
+def calculate_time_to_resolve(df):
+    """
+    Calculate the time taken to resolve each ticket in business days and total days.
+    Returns a dataframe with additional columns for these calculations.
+    """
+    df = df.copy()
+    
+    # Ensure the columns are in datetime format
+    df['Resolved Time'] = pd.to_datetime(df['Completed Time'], errors='coerce', dayfirst=True)
+    df['Creation Time'] = pd.to_datetime(df['OriginalCreationDate'], errors='coerce', dayfirst=True)
+    
+    # Drop rows with NaT in either 'Resolved Time' or 'Creation Time'
+    df = df.dropna(subset=['Resolved Time', 'Creation Time'])
+    
+    # Calculate time to resolve in total days
+    df['TimeToResolve_Days'] = (df['Resolved Time'] - df['Creation Time']).dt.days
+    
+    # Calculate time to resolve in business days using a helper function
+    df['TimeToResolve_BusinessDays'] = df.apply(lambda row: calculate_business_days_age(row['OriginalCreationDate'], row['Completed Time']), axis=1)
+    
+    return df

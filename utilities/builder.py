@@ -21,14 +21,14 @@ def contact_report_presentation(contact_csv, output_folder):
     #pu.create_open_contact_slides(df, prs)
     pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
     pu.create_resolved_items_per_month_slides(df, prs, output_folder)
+    pu.create_resolution_time_by_engineer_slide(df, prs, output_folder)
     # TODO:
-    # GRAPH THE NUMBER OF RESOLVED TICKETS PER MONTH
-    # NUMBER OF OPEN CONTACT TICKETS PER ENGINEER ON ONE PAGE
     # TIME TO CLAIM TICKET BY ENGINEER
     pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
 
 def engineering_review_board_presentation(project_csv, output_folder):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_New_slides(df, prs)
     # TODO:
@@ -69,7 +69,8 @@ def who_presentation(project_csv, name_filter, output_folder):
     person_filter(project_csv=project_csv, person=name_filter, output_folder=output_folder)
 
 def onhold_presentation(project_csv, output_folder):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_OnHold_slides(df, prs, no_section=True)
     pu.save_exit(prs, "PEA_Project_Report", "_OnHold", output_folder)
@@ -78,28 +79,30 @@ def objective_presentation(project_csv, output_folder):
     objective(project_csv=project_csv, output_folder=output_folder)
 
 def projects_presentation(project_csv, output_folder):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_project_section(df, prs)
     pu.save_exit(prs, "PEA_Project_Report", "_Projects", output_folder)
 
 def docs_presentation(document_csv, date_filter, output_folder):
-    all_docs(project_csv=document_csv, name_filter=date_filter, output_folder=output_folder)
+    all_docs(document_csv=document_csv, name_filter=date_filter, output_folder=output_folder)
 
 def document_changes_presentation(document_csv, output_folder):
-    doc_changes(project_csv=document_csv, output_folder=output_folder)
+    doc_changes(document_csv=document_csv, output_folder=output_folder)
 
 def output_all_presentation(project_csv, output_folder):
     output_all(project_csv=project_csv, output_folder=output_folder)
 
 def release_presentation(document_csv, release_group, internal, output_folder):
     if release_group == "BDUK":
-        release_board_slides_multi_filter(project_csv=document_csv, filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal, output_folder=output_folder)
+        release_board_slides_multi_filter(document_csv=document_csv, filter=["BDUK - P1", "BDUK - P2", "BDUK - P3", "BDUK - P4"], internal=internal, output_folder=output_folder)
     else:
-        release_board_slides(project_csv=document_csv, filter=release_group, internal=internal, output_folder=output_folder)
+        release_board_slides(document_csv=document_csv, filter=release_group, internal=internal, output_folder=output_folder)
 
 def person_filter(project_csv, output_folder, person='Matt', save=True, prs=None):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_ProjectOwner_slides(df, prs, person)
@@ -110,7 +113,8 @@ def person_filter(project_csv, output_folder, person='Matt', save=True, prs=None
     return output_path
 
 def impact_slides(project_csv, output_folder, filter=""):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     impacted = du.impacted_teams_list(df)
     output_path = ""
     if filter == "":
@@ -125,7 +129,8 @@ def impact_slides(project_csv, output_folder, filter=""):
     return output_path
 
 def allimpacted(project_csv, output_folder, save=True, prs=None):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     impacted = du.impacted_teams_list(df)
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
@@ -137,7 +142,8 @@ def allimpacted(project_csv, output_folder, save=True, prs=None):
     return output_path
 
 def objective(project_csv, output_folder, save=True, prs=None):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_Objective_slides(df, prs)
@@ -147,7 +153,8 @@ def objective(project_csv, output_folder, save=True, prs=None):
     return output_path
 
 def output_all(project_csv, output_folder, save=True, prs=None):
-    df = du.create_blank_dataframe(project_csv)
+    df_first = du.create_blank_dataframe(project_csv)
+    df = du.filter_by_lead_team(df_first)
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_AllProjects_slide(df, prs)
@@ -163,8 +170,9 @@ def output_all(project_csv, output_folder, save=True, prs=None):
         output_path = pu.save_exit(prs, report_type="PEA_Project_Report", folder = output_folder)
     return output_path
 
-def all_docs(project_csv, output_folder, name_filter='', save=True, prs=None):
-    df = du.create_blank_dataframe(project_csv)
+def all_docs(document_csv, output_folder, name_filter='', save=True, prs=None):
+    df_first = du.create_blank_dataframe(document_csv)
+    df = du.filter_by_lead_team(df_first)
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_document_release_section(df, prs, name_filter)
@@ -173,8 +181,9 @@ def all_docs(project_csv, output_folder, name_filter='', save=True, prs=None):
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_DocumentBoard", folder = output_folder)
     return output_path
 
-def doc_changes(project_csv, output_folder, save=True, prs=None):
-    df = du.create_blank_dataframe(project_csv)
+def doc_changes(document_csv, output_folder, save=True, prs=None):
+    df_first = du.create_blank_dataframe(document_csv)
+    df = du.filter_by_lead_team(df_first)
     if prs is None:
         prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
     pu.create_document_changes_section(df, prs)
@@ -183,8 +192,9 @@ def doc_changes(project_csv, output_folder, save=True, prs=None):
         output_path = pu.save_exit(prs, "PEA_Project_Report", "_DocumentChanges", folder = output_folder)
     return output_path
 
-def release_board_slides(project_csv, output_folder, filter='', save=True, prs=None, internal=False):
-    df = du.create_blank_dataframe(project_csv)
+def release_board_slides(document_csv, output_folder, filter='', save=True, prs=None, internal=False):
+    df_first = du.create_blank_dataframe(document_csv)
+    df = du.filter_by_lead_team(df_first)
     save_tail = "_FullReleaseBoard"
     if filter:
         df = df.loc[df['Release Group'] == filter]   
@@ -216,8 +226,9 @@ def release_board_slides(project_csv, output_folder, filter='', save=True, prs=N
 
     return output_path
 
-def release_board_slides_multi_filter(project_csv, output_folder, filter='[]', save=True, prs=None, internal=False):
-    df = du.create_blank_dataframe(project_csv)
+def release_board_slides_multi_filter(document_csv, output_folder, filter='[]', save=True, prs=None, internal=False):
+    df_first = du.create_blank_dataframe(document_csv)
+    df = du.filter_by_lead_team(df_first)
     save_tail = "_FullReleaseBoard"
     if filter:
         df = df[df['Release Group'].isin(filter)]    

@@ -356,6 +356,37 @@ def create_New_slides(df, prs, no_section=False):
     title_text = "New Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='NewProjects', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
 
+def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
+    """
+    Create a slide with a bar chart showing the average resolution time by engineer.
+    
+    df: The dataframe containing the contact data.
+    prs: The PowerPoint presentation object.
+    """
+    # Calculate the time to resolve for each ticket
+    original_df = du.calculate_time_to_resolve(df)
+
+    # Convert start_date and end_date to datetime
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    
+    # Filter for rows where Status is 'Resolved' and within the date range
+    mask = (original_df['Status'] == 'Resolved') & \
+           (pd.to_datetime(original_df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))
+    df_filtered = original_df[mask].copy()
+
+    # Plot the chart and save it as an image
+    chart_image_path = 'resolution_time_chart.png'
+    gu.plot_resolution_time_by_engineer(df_filtered, chart_image_path)
+
+    # Add a new slide for the chart
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, 'Average Resolution Time by Engineer')
+    insert_chart_into_slide(prs, slide, chart_image_path)
+
+    return prs
+
+
 def create_open_and_onhold_contact_chart(df, prs, output_folder, no_section=False):
     if no_section == False:
         create_title_slide(prs, f'Open and On-Hold Tickets Report')
