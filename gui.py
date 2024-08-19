@@ -182,7 +182,7 @@ class Application(tk.Frame):
                 df = pd.read_csv(self.file_path)
                 if 'Project Updates' in df.columns:
                     self.display_project_options()
-                if 'ContactType' in df.columns:
+                elif 'ContactType' in df.columns:
                     self.display_contact_options()
                 elif 'Doc Reference' in df.columns:
                     self.display_document_options()
