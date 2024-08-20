@@ -356,6 +356,26 @@ def create_New_slides(df, prs, no_section=False):
     title_text = "New Projects - " + str(len(on_hold))
     create_body_slide_four_cols(sorted, prs, type_flag='NewProjects', title_text=title_text, BUTTON_OVERRIDE=const.NEW_PROJECT_BUTTON_CONSTANTS)
 
+def create_claim_time_summary_slide(df, prs, output_folder):
+    """
+    Create a slide that shows the average claim time, count of tickets exceeding 2 business days, and total tickets per engineer.
+    """
+    # Calculate claim time and analyze the results
+    df = du.calculate_claim_time(df)
+    summary_df = du.analyze_claim_times(df)
+
+    # Plot the chart and save it as an image
+    chart_image_path = 'claim_time_summary_chart.png'
+    gu.plot_claim_time_summary(summary_df, chart_image_path)
+    
+    # Add a new slide for the chart
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, 'Claim Time Summary by Engineer')
+    insert_chart_into_slide(prs, slide, chart_image_path)
+
+    return prs
+
+
 def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
     Create a slide with a bar chart showing the average resolution time by engineer.
@@ -385,7 +405,6 @@ def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date=
     insert_chart_into_slide(prs, slide, chart_image_path)
 
     return prs
-
 
 def create_open_and_onhold_contact_chart(df, prs, output_folder, no_section=False):
     if no_section == False:

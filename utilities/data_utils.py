@@ -247,3 +247,35 @@ def calculate_time_to_resolve(df):
     df['TimeToResolve_BusinessDays'] = df.apply(lambda row: calculate_business_days_age(row['OriginalCreationDate'], row['Completed Time']), axis=1)
     
     return df
+
+def calculate_claim_time(df):
+    """
+    Calculate the time taken to claim each ticket in business days and total days.
+    Returns a dataframe with additional columns for these calculations.
+    """
+    df = df.copy()
+    
+    # Ensure the columns are in datetime format
+    df['Claimed Date'] = pd.to_datetime(df['Claimed Date'], errors='coerce', dayfirst=True)
+    df['Creation Time'] = pd.to_datetime(df['OriginalCreationDate'], errors='coerce', dayfirst=True)
+    
+    # Drop rows with NaT in either 'Claimed Date' or 'Creation Time'
+    df = df.dropna(subset=['Claimed Date', 'Creation Time'])
+   
+    # Calculate time to claim in business days using a helper function
+    df['TimeToClaim_BusinessDays'] = df.apply(lambda row: calculate_business_days_age(row['Creation Time'], row['Claimed Date']), axis=1)
+    
+    return df
+
+def analyze_claim_times(df):
+    """
+    Analyze the time to claim tickets by engineer.
+    Returns a summary dataframe with average claim time, count of tickets exceeding 2 business days, and total ticket count per engineer.
+    """
+    summary = df.groupby('AssignedTo').agg(
+        avg_claim_time=('TimeToClaim_BusinessDays', 'mean'),
+        exceed_two_days=('TimeToClaim_BusinessDays', lambda x: (x > 2).sum()),
+        total_tickets=('TimeToClaim_BusinessDays', 'count')
+    ).reset_index()
+    
+    return summary

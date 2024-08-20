@@ -164,3 +164,44 @@ if __name__ == "__main__":
     csv_file_path = './raw/PROJECT.csv'
     project_df, priority_color_mapping = load_and_prepare_data(csv_file_path)
     create_scatter_plot(project_df, priority_color_mapping)
+
+def plot_claim_time_summary(df, output_path='claim_time_summary_chart.png'):
+    """
+    Plot the summary of claim times, showing average claim time and count of tickets exceeding 2 business days.
+    
+    df: Summary dataframe with average claim time, count exceeding 2 days, and total tickets.
+    output_path: Path to save the generated chart image.
+    """
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    ax2 = ax1.twinx()
+    
+    width = 0.4
+    df.set_index('AssignedTo', inplace=True)
+    
+    df['avg_claim_time'].plot(kind='bar', color='blue', ax=ax1, width=width, position=1)
+    df['exceed_two_days'].plot(kind='bar', color='red', ax=ax2, width=width, position=0)
+
+    ax1.set_ylabel('Average Claim Time (Business Days)', color='blue')
+    ax2.set_ylabel('Tickets Exceeding 2 Days', color='red')
+
+    # Set y-axis limits and enforce integer ticks on the right axis
+    ax1.set_ylim(0, max(1, df['avg_claim_time'].max() * 1.2))
+    ax2.set_ylim(0, max(1, df['exceed_two_days'].max() * 1.2))
+    ax2.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+
+    ax1.set_xlabel('Engineer')
+    ax1.set_title('Claim Time Summary by Engineer')
+    
+    # Annotate bar heights
+    for p in ax1.patches:
+        ax1.annotate(f'{p.get_height():.1f}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                     ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+    
+    for p in ax2.patches:
+        ax2.annotate(f'{p.get_height():.0f}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                     ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()

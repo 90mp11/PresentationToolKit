@@ -22,8 +22,7 @@ def contact_report_presentation(contact_csv, output_folder):
     pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
     pu.create_resolved_items_per_month_slides(df, prs, output_folder)
     pu.create_resolution_time_by_engineer_slide(df, prs, output_folder)
-    # TODO:
-    # TIME TO CLAIM TICKET BY ENGINEER
+    pu.create_claim_time_summary_slide(du.create_blank_dataframe(contact_csv), prs, output_folder)
     pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
 
 def engineering_review_board_presentation(project_csv, output_folder):
