@@ -148,6 +148,10 @@ def calculate_business_days_age(creation_date_str, reference_date_str=None):
     else:
         reference_date = pd.to_datetime(reference_date_str, dayfirst=True)
     
+    # Check if either date is NaT (Not a Time)
+    if pd.isna(creation_date) or pd.isna(reference_date):
+        return np.nan
+    
     # If the ticket was created on a weekend, adjust the creation date to the following Monday
     if creation_date.weekday() >= 5:  # 5 is Saturday, 6 is Sunday
         creation_date += timedelta(days=(7 - creation_date.weekday()))

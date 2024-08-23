@@ -389,6 +389,19 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     # Reset index to ensure engineer names are accessible
     summary_df = summary_df.reset_index()
     
+    # Calculate additional metrics
+    summary_df['Tickets Closed <4W'] = df.groupby('AssignedTo').apply(
+        lambda x: ((pd.to_datetime(x['Completed Time'], errors='coerce', dayfirst=True) -
+                    pd.to_datetime(x['OriginalCreationDate'], errors='coerce', dayfirst=True)) < pd.Timedelta(weeks=4)).sum()).values
+    
+    # Calculate Average Close Time in Business Days
+    summary_df['Average Close Time (Business Days)'] = df.groupby('AssignedTo').apply(
+        lambda x: x.apply(lambda row: du.calculate_business_days_age(row['OriginalCreationDate'], row['Completed Time']), axis=1).mean()
+    ).values
+    
+    # Handle NaN values in 'Average Close Time (Business Days)'
+    summary_df['Average Close Time (Business Days)'] = summary_df['Average Close Time (Business Days)'].fillna(0).astype(int)
+    
     # Add a new slide for the table
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
     set_title(slide, 'Claim Time Summary by Engineer')
@@ -409,17 +422,25 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     table.cell(0, 2).text = "Tickets >2D"
     table.cell(0, 3).text = "Average Response (Business Days)"
     table.cell(0, 4).text = "Tickets closed <4W"
-    table.cell(0, 5).text = "Average Close Time"
+    table.cell(0, 5).text = "Average Close Time (Business Days)"
     
     # Populate the table with data
     for i, row in summary_df.iterrows():
-        #calculate row_data
+        # Calculate per row
         percentage_over_2_days = (row['exceed_two_days'] / row['total_tickets']) * 100 if row['total_tickets'] > 0 else 0
-        #populate cells
-        table.cell(i + 1, 0).text = str(row['AssignedTo'])  # Use the engineer's name
-        table.cell(i + 1, 1).text = f"{row['total_tickets']}"  # Convert to string
-        table.cell(i + 1, 2).text = f"{row['exceed_two_days']} ({percentage_over_2_days:.1f}%)"  # Combine number and percentage
-        table.cell(i + 1, 3).text = f"{row['avg_claim_time']:.1f}"  # Format as string
+        # Input all data
+        table.cell(i + 1, 0).text = str(row['AssignedTo'])  # Engineer's name
+        table.cell(i + 1, 1).text = str(row['total_tickets'])  # Total tickets
+        table.cell(i + 1, 2).text = f"{row['exceed_two_days']} ({percentage_over_2_days:.1f}%)"  # Tickets >2D
+        table.cell(i + 1, 3).text = f"{row['avg_claim_time']:.1f}"  # Average response time
+        table.cell(i + 1, 4).text = str(row['Tickets Closed <4W'])  # Tickets closed <4W
+        table.cell(i + 1, 5).text = f"{row['Average Close Time (Business Days)']:.1f}"  # Average close time in business days
+    
+    # Format table (set column widths)
+    column_widths = [Cm(6.0), Cm(4.0), Cm(4.0), Cm(6.4), Cm(4.1), Cm(4.0)]
+    for col_idx, width in enumerate(column_widths):
+        table.columns[col_idx].width = width
+
     return prs
 
 def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
