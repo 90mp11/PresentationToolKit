@@ -370,7 +370,7 @@ def create_claim_time_summary_slide(df, prs, output_folder):
     
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    set_title(slide, 'Claim Time Summary by Engineer')
+    set_title(slide, 'Claim Time Summary by Engineer (Graph)')
     insert_chart_into_slide(prs, slide, chart_image_path)
 
     return prs
@@ -389,25 +389,12 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     # Reset index to ensure engineer names are accessible
     summary_df = summary_df.reset_index()
     
-    # Calculate additional metrics
-    summary_df['Tickets Closed <4W'] = df.groupby('AssignedTo').apply(
-        lambda x: ((pd.to_datetime(x['Completed Time'], errors='coerce', dayfirst=True) -
-                    pd.to_datetime(x['OriginalCreationDate'], errors='coerce', dayfirst=True)) < pd.Timedelta(weeks=4)).sum()).values
-    
-    # Calculate Average Close Time in Business Days
-    summary_df['Average Close Time (Business Days)'] = df.groupby('AssignedTo').apply(
-        lambda x: x.apply(lambda row: du.calculate_business_days_age(row['OriginalCreationDate'], row['Completed Time']), axis=1).mean()
-    ).values
-    
-    # Handle NaN values in 'Average Close Time (Business Days)'
-    summary_df['Average Close Time (Business Days)'] = summary_df['Average Close Time (Business Days)'].fillna(0).astype(int)
-    
     # Add a new slide for the table
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
     set_title(slide, 'Claim Time Summary by Engineer')
     
     # Define table dimensions and positions
-    rows, cols = summary_df.shape[0] + 1, 6  # +1 for the header row and 6 columns
+    rows, cols = summary_df.shape[0] + 1, 4  # +1 for the header row and 4 columns
     left = Cm(1.0)
     top = Cm(2.4)
     width = Cm(32.2)
@@ -418,30 +405,77 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     
     # Set column headers
     table.cell(0, 0).text = "Engineer"
-    table.cell(0, 1).text = "Total"
+    table.cell(0, 1).text = "Total Tickets Answered"
     table.cell(0, 2).text = "Tickets >2D"
     table.cell(0, 3).text = "Average Response (Business Days)"
-    table.cell(0, 4).text = "Tickets closed <4W"
-    table.cell(0, 5).text = "Average Close Time (Business Days)"
     
     # Populate the table with data
     for i, row in summary_df.iterrows():
-        # Calculate per row
         percentage_over_2_days = (row['exceed_two_days'] / row['total_tickets']) * 100 if row['total_tickets'] > 0 else 0
-        # Input all data
         table.cell(i + 1, 0).text = str(row['AssignedTo'])  # Engineer's name
         table.cell(i + 1, 1).text = str(row['total_tickets'])  # Total tickets
         table.cell(i + 1, 2).text = f"{row['exceed_two_days']} ({percentage_over_2_days:.1f}%)"  # Tickets >2D
         table.cell(i + 1, 3).text = f"{row['avg_claim_time']:.1f}"  # Average response time
-        table.cell(i + 1, 4).text = str(row['Tickets Closed <4W'])  # Tickets closed <4W
-        table.cell(i + 1, 5).text = f"{row['Average Close Time (Business Days)']:.1f}"  # Average close time in business days
     
     # Format table (set column widths)
-    column_widths = [Cm(6.0), Cm(4.0), Cm(4.0), Cm(6.4), Cm(4.1), Cm(4.0)]
+    column_widths = [Cm(8.0), Cm(8.0), Cm(8.1), Cm(8.1)]
     for col_idx, width in enumerate(column_widths):
         table.columns[col_idx].width = width
 
     return prs
+
+def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
+    original_df = du.calculate_time_to_resolve(df)
+
+    # Convert start_date and end_date to datetime
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    # Filter for rows where Status is 'Resolved' and within the date range
+    mask = (original_df['Status'] == 'Resolved') & \
+           (pd.to_datetime(original_df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))
+    df_filtered = original_df[mask].copy()
+
+    #df_closed = df.dropna(subset=['Completed Time'])
+
+    closure_df = df_filtered.groupby('Closed by').agg(
+        total_tickets_closed=('ID', 'count'),
+        tickets_closed_less_4w=('Completed Time', lambda x: sum(
+            (pd.to_datetime(df_filtered.loc[x.index, 'Completed Time'], errors='coerce', dayfirst=True) - 
+             pd.to_datetime(df_filtered.loc[x.index, 'Creation Time'], errors='coerce', dayfirst=True)) < pd.Timedelta(weeks=4))),
+        average_close_time=('TimeToResolve_BusinessDays', 'mean')
+    ).reset_index()
+
+    closure_df['average_close_time'] = closure_df['average_close_time'].fillna(0).astype(int)
+
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])
+    set_title(slide, 'Closure Time Summary by Engineer')
+
+    rows, cols = closure_df.shape[0] + 1, 4
+    left = Cm(1.0)
+    top = Cm(2.4)
+    width = Cm(32.2)
+    height = Cm(0.8 + 0.6 * rows)
+
+    table = slide.shapes.add_table(rows, cols, left, top, width, height).table
+
+    table.cell(0, 0).text = "Engineer"
+    table.cell(0, 1).text = "Total Tickets Closed"
+    table.cell(0, 2).text = "Tickets Closed <4W"
+    table.cell(0, 3).text = "Average Close Time (Business Days)"
+
+    for i, row in closure_df.iterrows():
+        table.cell(i + 1, 0).text = str(row['Closed by'])
+        table.cell(i + 1, 1).text = str(row['total_tickets_closed'])
+        table.cell(i + 1, 2).text = str(row['tickets_closed_less_4w'])
+        table.cell(i + 1, 3).text = f"{row['average_close_time']:.1f}"
+
+    column_widths = [Cm(8.0), Cm(8.0), Cm(8.1), Cm(8.1)]
+    for col_idx, width in enumerate(column_widths):
+        table.columns[col_idx].width = width
+
+    return prs
+
 
 def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
@@ -529,7 +563,7 @@ def create_grouped_resolved_items_per_month_chart_slide(df, prs, output_folder):
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    set_title(slide, 'Resolved Items Per Month By Engineer(Grouped)')
+    set_title(slide, 'Resolved Items Per Month By Engineer (Grouped)')
     insert_chart_into_slide(prs, slide, chart_image_path)
    
     return prs
@@ -608,36 +642,16 @@ def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2
     resolved_items_per_month = resolved_df.groupby(['Closed by', 'YearMonth']).size().reset_index(name='ResolvedCount')
 
     #TODO: consider moving these slide creators back to builder.py and moving this logic into data_utils to create a cleaner flow
+    #Create the Table Page
+    #create_resolved_items_per_month_table_slide(resolved_items_per_month, prs)
 
-    create_resolved_items_per_month_table_slide(resolved_items_per_month, prs)
-
-    #Create the Graph Pages TODO: pass on the output_path to save the graphs directly into (for the GUI implementation)
+    #Create the Graph Pages
     create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs, output_folder)
-    create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs, output_folder)
+    #create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs, output_folder)
     create_engineer_grouped_resolved_items_chart_slide(resolved_items_per_month, prs, output_folder)
 
     return prs
     
-
-def create_open_contact_slides(df, prs, no_section=False):
-    if no_section == False:
-        create_title_slide(prs, f'Open Requests')
-    #Filter the dataframe to only the OnHold projects
-    
-    df_open_tickets = du.filter_dataframe_by_status(df, ['Pending', 'On Hold']) 
-
-    for engineer in df_open_tickets['AssignedTo'].unique():
-        # Filter the dataframe for this specific engineer's open tickets
-        engineer_tickets = df_open_tickets[df_open_tickets['AssignedTo'] == engineer]
-        
-        # Sort the tickets by ID or any other relevant field
-        sorted_tickets = engineer_tickets.sort_values(by=['ID'])
-        
-        # Create a slide with the engineer's name and their open tickets
-        title_text = f"Open Tickets for {engineer} - {len(engineer_tickets)}"
-        create_body_slide_four_cols(sorted_tickets, prs, type_flag='ContactLog', title_text=title_text, BUTTON_OVERRIDE=const.CONTACT_BUTTON_CONSTANTS)
-    return
-
 def create_AllProjects_slide(df, prs, filter=""):
     
     title_text = "All Projects"

@@ -18,12 +18,12 @@ def contact_report_presentation(contact_csv, output_folder):
     df = du.create_blank_dataframe(contact_csv)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
 
-    #pu.create_open_contact_slides(df, prs)
-    pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
-    #pu.create_resolved_items_per_month_slides(df, prs, output_folder)
+    #pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
+    pu.create_resolved_items_per_month_slides(df, prs, output_folder)
     pu.create_resolution_time_by_engineer_slide(df, prs, output_folder)
-    #pu.create_claim_time_summary_slide(du.create_blank_dataframe(contact_csv), prs, output_folder)
+    #pu.create_claim_time_summary_slide(df, prs, output_folder)
     pu.create_claim_time_summary_table_slide(df, prs, output_folder)
+    pu.create_closure_time_summary_table_slide(df, prs, output_folder)
     pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
 
 def engineering_review_board_presentation(project_csv, output_folder):
