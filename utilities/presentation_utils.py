@@ -365,7 +365,7 @@ def create_claim_time_summary_slide(df, prs, output_folder):
     summary_df = du.analyze_claim_times(df)
 
     # Plot the chart and save it as an image
-    chart_image_path = 'claim_time_summary_chart.png'
+    chart_image_path = os.path.join(output_folder, 'claim_time_summary_chart.png')
     gu.plot_claim_time_summary(summary_df, chart_image_path)
     
     # Add a new slide for the chart
@@ -375,6 +375,52 @@ def create_claim_time_summary_slide(df, prs, output_folder):
 
     return prs
 
+def create_claim_time_summary_table_slide(df, prs, output_folder):
+    """
+    Create a slide with a table showing the summary of claim times by engineer.
+    
+    df: The dataframe containing the contact data.
+    prs: The PowerPoint presentation object.
+    """
+    # Calculate claim time and analyze the results
+    df = du.calculate_claim_time(df)
+    summary_df = du.analyze_claim_times(df)
+    
+    # Reset index to ensure engineer names are accessible
+    summary_df = summary_df.reset_index()
+    
+    # Add a new slide for the table
+    slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
+    set_title(slide, 'Claim Time Summary by Engineer')
+    
+    # Define table dimensions and positions
+    rows, cols = summary_df.shape[0] + 1, 6  # +1 for the header row and 6 columns
+    left = Cm(1.0)
+    top = Cm(2.4)
+    width = Cm(32.2)
+    height = Cm(0.8 + 0.6 * rows)  # Adjust height based on the number of rows
+    
+    # Add table to slide
+    table = slide.shapes.add_table(rows, cols, left, top, width, height).table
+    
+    # Set column headers
+    table.cell(0, 0).text = "Engineer"
+    table.cell(0, 1).text = "Total"
+    table.cell(0, 2).text = "Tickets >2D"
+    table.cell(0, 3).text = "Average Response (Business Days)"
+    table.cell(0, 4).text = "Tickets closed <4W"
+    table.cell(0, 5).text = "Average Close Time"
+    
+    # Populate the table with data
+    for i, row in summary_df.iterrows():
+        #calculate row_data
+        percentage_over_2_days = (row['exceed_two_days'] / row['total_tickets']) * 100 if row['total_tickets'] > 0 else 0
+        #populate cells
+        table.cell(i + 1, 0).text = str(row['AssignedTo'])  # Use the engineer's name
+        table.cell(i + 1, 1).text = f"{row['total_tickets']}"  # Convert to string
+        table.cell(i + 1, 2).text = f"{row['exceed_two_days']} ({percentage_over_2_days:.1f}%)"  # Combine number and percentage
+        table.cell(i + 1, 3).text = f"{row['avg_claim_time']:.1f}"  # Format as string
+    return prs
 
 def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
@@ -396,7 +442,7 @@ def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date=
     df_filtered = original_df[mask].copy()
 
     # Plot the chart and save it as an image
-    chart_image_path = 'resolution_time_chart.png'
+    chart_image_path = os.path.join(output_folder, 'resolution_time_chart.png')
     gu.plot_resolution_time_by_engineer(df_filtered, chart_image_path)
 
     # Add a new slide for the chart
@@ -417,7 +463,8 @@ def create_open_and_onhold_contact_chart(df, prs, output_folder, no_section=Fals
     grouped_df = du.calculate_and_group_ticket_ages(df_combined_tickets)
 
     # Create the bar chart and save it as an image
-    chart_path = 'age_bar_chart.png'
+    chart_path = os.path.join(output_folder, 'age_bar_chart.png')
+    
     gu.create_age_bar_chart(grouped_df, chart_path)
 
     # Create a new slide for the chart
@@ -429,25 +476,26 @@ def create_open_and_onhold_contact_chart(df, prs, output_folder, no_section=Fals
 
     return
 
-def create_resolved_items_per_month_chart_slide(df, prs):
+def create_resolved_items_per_month_chart_slide(df, prs, output_folder):
     """
     Create a slide with a stacked bar chart showing the number of resolved items per engineer per month.
     
     df: The dataframe containing the contact data
     prs: The PowerPoint presentation object
+    output_folder: Pathstring to output_folder
     """
     # Plot the chart and save it as an image
-    chart_image_path = 'resolved_items_chart.png'
+    chart_image_path = os.path.join(output_folder, 'resolved_items_chart.png')
     gu.plot_resolved_items_per_month(df, chart_image_path)
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
     set_title(slide, 'Resolved Items Per Month')
     insert_chart_into_slide(prs, slide, chart_image_path)
-   
+
     return prs
 
-def create_grouped_resolved_items_per_month_chart_slide(df, prs):
+def create_grouped_resolved_items_per_month_chart_slide(df, prs, output_folder):
     """
     Create a slide with a grouped bar chart showing the number of resolved items per engineer per month.
     
@@ -455,17 +503,17 @@ def create_grouped_resolved_items_per_month_chart_slide(df, prs):
     prs: The PowerPoint presentation object
     """
     # Plot the chart and save it as an image
-    chart_image_path = 'grouped_resolved_items_chart.png'
+    chart_image_path = os.path.join(output_folder, 'grouped_resolved_items_chart.png')
     gu.plot_grouped_resolved_items_per_month(df, chart_image_path)
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    set_title(slide, 'Resolved Items Per Month (Grouped)')
+    set_title(slide, 'Resolved Items Per Month By Engineer(Grouped)')
     insert_chart_into_slide(prs, slide, chart_image_path)
    
     return prs
 
-def create_engineer_grouped_resolved_items_chart_slide(df, prs):
+def create_engineer_grouped_resolved_items_chart_slide(df, prs, output_folder):
     """
     Create a slide with a bar chart grouped by engineer, showing the number of resolved items per engineer per month.
     
@@ -473,7 +521,7 @@ def create_engineer_grouped_resolved_items_chart_slide(df, prs):
     prs: The PowerPoint presentation object
     """
     # Plot the chart and save it as an image
-    chart_image_path = 'engineer_grouped_resolved_chart.png'
+    chart_image_path = os.path.join(output_folder, 'engineer_grouped_resolved_chart.png')
     gu.plot_engineer_grouped_resolved_items(df, chart_image_path)
 
     # Add a new slide for the chart
@@ -543,9 +591,9 @@ def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2
     create_resolved_items_per_month_table_slide(resolved_items_per_month, prs)
 
     #Create the Graph Pages TODO: pass on the output_path to save the graphs directly into (for the GUI implementation)
-    create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
-    create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs)
-    create_engineer_grouped_resolved_items_chart_slide(resolved_items_per_month, prs)
+    create_resolved_items_per_month_chart_slide(resolved_items_per_month, prs, output_folder)
+    create_grouped_resolved_items_per_month_chart_slide(resolved_items_per_month, prs, output_folder)
+    create_engineer_grouped_resolved_items_chart_slide(resolved_items_per_month, prs, output_folder)
 
     return prs
     
