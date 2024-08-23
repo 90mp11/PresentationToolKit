@@ -425,16 +425,17 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     return prs
 
 def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
-    # Use the refactored function to filter and aggregate resolution time data
-    df_filtered = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
+    # Get both filtered and aggregated data
+    df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
 
-    # Now we need to aggregate further to get the closure summary
+    # Now we need to aggregate further to get the closure summary, but use the individual counts and times
     closure_df = df_filtered.groupby('AssignedTo').agg(
         total_tickets_closed=('AssignedTo', 'count'),
         tickets_closed_less_4w=('TimeToResolve_BusinessDays', lambda x: sum(x < 20)),  # Assuming 4 weeks as 20 business days
         average_close_time=('TimeToResolve_BusinessDays', 'mean')
     ).reset_index()
 
+    # Adjust rounding to one decimal place without converting to integer
     closure_df['average_close_time'] = closure_df['average_close_time'].fillna(0).round(1)
 
     # Create the slide and add the table
@@ -466,7 +467,6 @@ def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='
 
     return prs
 
-
 def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
     Create a slide with a bar chart showing the average resolution time by engineer.
@@ -475,7 +475,7 @@ def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date=
     prs: The PowerPoint presentation object.
     """
     # Process the DataFrame to filter and aggregate resolution times by engineer
-    df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
+    df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
 
     # Plot the chart and save it as an image
     chart_image_path = os.path.join(output_folder, 'resolution_time_chart.png')
