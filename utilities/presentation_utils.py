@@ -425,29 +425,19 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     return prs
 
 def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
-    original_df = du.calculate_time_to_resolve(df)
+    # Use the refactored function to filter and aggregate resolution time data
+    df_filtered = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
 
-    # Convert start_date and end_date to datetime
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
-
-    # Filter for rows where Status is 'Resolved' and within the date range
-    mask = (original_df['Status'] == 'Resolved') & \
-           (pd.to_datetime(original_df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))
-    df_filtered = original_df[mask].copy()
-
-    #df_closed = df.dropna(subset=['Completed Time'])
-
-    closure_df = df_filtered.groupby('Closed by').agg(
-        total_tickets_closed=('ID', 'count'),
-        tickets_closed_less_4w=('Completed Time', lambda x: sum(
-            (pd.to_datetime(df_filtered.loc[x.index, 'Completed Time'], errors='coerce', dayfirst=True) - 
-             pd.to_datetime(df_filtered.loc[x.index, 'Creation Time'], errors='coerce', dayfirst=True)) < pd.Timedelta(weeks=4))),
+    # Now we need to aggregate further to get the closure summary
+    closure_df = df_filtered.groupby('AssignedTo').agg(
+        total_tickets_closed=('AssignedTo', 'count'),
+        tickets_closed_less_4w=('TimeToResolve_BusinessDays', lambda x: sum(x < 20)),  # Assuming 4 weeks as 20 business days
         average_close_time=('TimeToResolve_BusinessDays', 'mean')
     ).reset_index()
 
-    closure_df['average_close_time'] = closure_df['average_close_time'].fillna(0).astype(int)
+    closure_df['average_close_time'] = closure_df['average_close_time'].fillna(0).round(1)
 
+    # Create the slide and add the table
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])
     set_title(slide, 'Closure Time Summary by Engineer')
 
@@ -465,7 +455,7 @@ def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='
     table.cell(0, 3).text = "Average Close Time (Business Days)"
 
     for i, row in closure_df.iterrows():
-        table.cell(i + 1, 0).text = str(row['Closed by'])
+        table.cell(i + 1, 0).text = str(row['AssignedTo'])
         table.cell(i + 1, 1).text = str(row['total_tickets_closed'])
         table.cell(i + 1, 2).text = str(row['tickets_closed_less_4w'])
         table.cell(i + 1, 3).text = f"{row['average_close_time']:.1f}"
@@ -484,21 +474,12 @@ def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date=
     df: The dataframe containing the contact data.
     prs: The PowerPoint presentation object.
     """
-    # Calculate the time to resolve for each ticket
-    original_df = du.calculate_time_to_resolve(df)
-
-    # Convert start_date and end_date to datetime
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
-    
-    # Filter for rows where Status is 'Resolved' and within the date range
-    mask = (original_df['Status'] == 'Resolved') & \
-           (pd.to_datetime(original_df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))
-    df_filtered = original_df[mask].copy()
+    # Process the DataFrame to filter and aggregate resolution times by engineer
+    df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
 
     # Plot the chart and save it as an image
     chart_image_path = os.path.join(output_folder, 'resolution_time_chart.png')
-    gu.plot_resolution_time_by_engineer(df_filtered, chart_image_path)
+    gu.plot_resolution_time_by_engineer(df_grouped, chart_image_path)
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout

@@ -283,3 +283,31 @@ def analyze_claim_times(df):
     ).reset_index()
     
     return summary
+
+def filter_and_aggregate_resolution_time(df, start_date='2024-01-01', end_date='2024-12-31'):
+    """
+    Filters the DataFrame for resolved tickets within the specified date range and
+    calculates the average resolution time by engineer.
+
+    df: The original DataFrame containing the ticket data.
+    start_date: The start date for filtering (inclusive).
+    end_date: The end date for filtering (inclusive).
+
+    Returns a DataFrame grouped by 'AssignedTo' with the average 'TimeToResolve_BusinessDays'.
+    """
+    # Calculate the time to resolve for each ticket
+    df = calculate_time_to_resolve(df)
+
+    # Convert start_date and end_date to datetime
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    # Filter for rows where Status is 'Resolved' and within the date range
+    mask = (df['Status'] == 'Resolved') & \
+           (pd.to_datetime(df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))
+    df_filtered = df[mask].copy()
+
+    # Group by engineer and calculate the average resolution time in business days
+    df_grouped = df_filtered.groupby('AssignedTo')['TimeToResolve_BusinessDays'].mean().reset_index()
+
+    return df_grouped
