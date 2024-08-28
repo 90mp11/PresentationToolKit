@@ -96,7 +96,7 @@ def main():
         bu.engineering_review_board_presentation(project_csv=project_csv, output_folder=output_folder)
     if args.contact:
         gui_trigger = 0
-        bu.contact_report_presentation(contact_csv=contact_csv, output_folder=output_folder)
+        bu.contact_report_presentation(contact_csv=contact_csv, output_folder=output_folder, start_date='2024-01-01', end_date='2024-12-31')
     if gui_trigger:
         run_gui()
 

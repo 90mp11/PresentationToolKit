@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkcalendar import DateEntry
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
 from PIL import Image, ImageTk, UnidentifiedImageError
@@ -176,6 +177,23 @@ class Application(tk.Frame):
         self.file_path = filedialog.askopenfilename()
         self.clear_impacted_areas()  # Clear impacted areas when a new file is uploaded
         self.impacted_areas_frame.grid_remove()  # Hide the impacted areas frame
+
+        # Check if contact_names_frame exists before trying to hide it
+        if hasattr(self, 'contact_names_frame'):
+            self.contact_names_frame.grid_remove()  # Hide the contact names frame initially
+        
+        # Hide the date-pickers if they exist
+        if hasattr(self, 'start_date_label'):
+            self.start_date_label.grid_remove()
+        if hasattr(self, 'start_date_entry'):
+            self.start_date_entry.grid_remove()
+        if hasattr(self, 'end_date_label'):
+            self.end_date_label.grid_remove()
+        if hasattr(self, 'end_date_entry'):
+            self.end_date_entry.grid_remove()
+        
+        self.options_container.grid_remove()  # Hide options frame initially
+
         if self.file_path:
             try:
                 self.file_label.config(text=self.file_path.split("/")[-1])
@@ -184,6 +202,7 @@ class Application(tk.Frame):
                     self.display_project_options()
                 elif 'ContactType' in df.columns:
                     self.display_contact_options()
+                    self.show_contact_names()  # Automatically show contact names if Contact Log Report is detected
                 elif 'Doc Reference' in df.columns:
                     self.display_document_options()
                 else:
@@ -222,16 +241,83 @@ class Application(tk.Frame):
 
     def display_contact_options(self):
         self.clear_options()
-        document_options = [
-            ("Contact Log Report", "contact", "Generates the Contact Log Report")
-        ]
-        for i, (text, mode, tooltip) in enumerate(document_options):
-            var = tk.BooleanVar(value=False)
-            cb = ttk.Checkbutton(self.options_container, text=text, variable=var)
-            cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
-            self.option_vars[mode] = var
-            self.options.append(cb)
-            ToolTip(cb, tooltip)
+
+        # Configure the main grid columns
+        self.options_container.grid_columnconfigure(0, minsize=300)  # Adjust width for options column
+        self.options_container.grid_columnconfigure(1, minsize=200)  # Column for "Closed By" section
+
+        # Set row weights to prevent stretching
+        for i in range(3):
+            self.options_container.grid_rowconfigure(i, weight=0)
+
+        # Row 0, Column 0: Options label
+        if not hasattr(self, 'options_label'):
+            self.options_label = ttk.Label(self.options_container, text="Options", font=self.heading_font)
+        self.options_label.grid(row=0, column=0, padx=5, pady=2, sticky=tk.W)
+
+        # Row 0, Column 1: Closed By label
+        if not hasattr(self, 'closed_by_label'):
+            self.closed_by_label = ttk.Label(self.options_container, text="Closed By", font=self.heading_font)
+        self.closed_by_label.grid(row=0, column=1, padx=5, pady=2, sticky=tk.W)
+
+        # Create a frame within the "Options" column for the nested grid
+        self.options_frame = ttk.Frame(self.options_container)
+        self.options_frame.grid(row=1, column=0, padx=5, pady=2, sticky=tk.NW)
+
+        # Configure the nested grid columns within the options_frame
+        self.options_frame.grid_columnconfigure(0, weight=1)
+        self.options_frame.grid_columnconfigure(1, weight=1)
+
+        # Row 0 in nested grid: Contact Log Report checkbox
+        self.contact_log_var = tk.BooleanVar(value=True)
+        self.contact_log_checkbox = ttk.Checkbutton(self.options_frame, text="Contact Log Report", variable=self.contact_log_var)
+        self.contact_log_checkbox.grid(row=0, column=0, columnspan=2, padx=5, pady=2, sticky=tk.W)
+
+        # Row 1 in nested grid: Start Date label and DatePicker
+        self.start_date_label = ttk.Label(self.options_frame, text="Start Date")
+        self.start_date_label.grid(row=1, column=0, padx=5, pady=2, sticky=tk.W)
+        self.start_date_entry = DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=1, day=1)
+        self.start_date_entry.grid(row=1, column=1, padx=5, pady=2, sticky=tk.W)
+
+        # Row 2 in nested grid: End Date label and DatePicker
+        self.end_date_label = ttk.Label(self.options_frame, text="End Date")
+        self.end_date_label.grid(row=2, column=0, padx=5, pady=2, sticky=tk.W)
+        self.end_date_entry = DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=12, day=31)
+        self.end_date_entry.grid(row=2, column=1, padx=5, pady=2, sticky=tk.W)
+
+        # Row 1-2, Column 1: "Closed By" checkboxes, aligned to the top-left
+        self.contact_names_frame = ttk.Frame(self.options_container, padding="5 5 5 5")
+        self.contact_names_frame.grid(row=1, column=1, rowspan=3, pady=2, padx=5, sticky=tk.NW)
+
+        self.contact_names_container = ScrollableFrame(self.contact_names_frame)
+        self.contact_names_container.grid(row=0, column=0, pady=5, padx=5, sticky=(tk.W, tk.E))
+
+        self.contact_names_vars = {}
+        self.contact_names_checkbuttons = []
+
+    def show_contact_names(self):
+        self.contact_names_frame.grid()  # Ensure the contact names frame is shown
+        self.update_contact_names_checkbuttons()
+
+    def update_contact_names_checkbuttons(self):
+        self.clear_contact_names()
+        try:
+            df = pd.read_csv(self.file_path)
+            unique_names = df['Closed by'].dropna().unique()
+            for i, name in enumerate(sorted(unique_names)):
+                var = tk.BooleanVar(value=False)
+                cb = ttk.Checkbutton(self.contact_names_container.scrollable_frame, text=name, variable=var)
+                cb.grid(row=i, column=0, padx=10, pady=5, sticky=tk.W)
+                self.contact_names_vars[name] = var
+                self.contact_names_checkbuttons.append(cb)
+        except Exception as e:
+            messagebox.showerror("Error", f"Error loading Closed By names: {e}")
+
+    def clear_contact_names(self):
+        for cb in self.contact_names_checkbuttons:
+            cb.grid_forget()
+        self.contact_names_checkbuttons.clear()
+        self.contact_names_vars.clear()
 
     def display_document_options(self):
         self.clear_options()
@@ -293,6 +379,10 @@ class Application(tk.Frame):
             self.release_group_combobox.grid_forget()
             self.release_group_label.grid_forget()
         self.option_vars.clear()
+
+        # Hide the Closed By label if it exists
+        if hasattr(self, 'closed_by_label'):
+            self.closed_by_label.grid_remove()
 
     def clear_impacted_areas(self):
         for cb in self.impacted_areas_checkbuttons:
@@ -359,9 +449,17 @@ class Application(tk.Frame):
             if self.option_vars.get('document_changes', tk.BooleanVar(value=False)).get():
                 bu.document_changes_presentation(self.file_path, self.output_folder)
                 files_created += 1
+            
             if self.option_vars.get('contact', tk.BooleanVar(value=False)).get():
-                bu.contact_report_presentation(self.file_path, self.output_folder)
-                files_created += 1
+                selected_names = [name for name, var in self.contact_names_vars.items() if var.get()]
+                start_date = self.start_date_entry.get_date().strftime('%Y-%m-%d')
+                end_date = self.end_date_entry.get_date().strftime('%Y-%m-%d')
+                if selected_names:
+                    bu.contact_report_presentation(self.file_path, self.output_folder, selected_names, start_date=start_date, end_date=end_date)
+                    files_created += 1
+                else:
+                    bu.contact_report_presentation(self.file_path, self.output_folder, start_date=start_date, end_date=end_date)
+                    files_created += 1
 
             # Show toast notification
             if files_created > 0:

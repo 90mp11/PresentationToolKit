@@ -375,16 +375,18 @@ def create_claim_time_summary_slide(df, prs, output_folder):
 
     return prs
 
-def create_claim_time_summary_table_slide(df, prs, output_folder):
+def create_claim_time_summary_table_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
     """
     Create a slide with a table showing the summary of claim times by engineer.
     
     df: The dataframe containing the contact data.
     prs: The PowerPoint presentation object.
     """
+    time_filtered_df = du.pre_filter_creation_time(df, start_date, end_date)
+
     # Calculate claim time and analyze the results
-    df = du.calculate_claim_time(df)
-    summary_df = du.analyze_claim_times(df)
+    time_filtered_df = du.calculate_claim_time(time_filtered_df)
+    summary_df = du.analyze_claim_times(time_filtered_df)
     
     # Reset index to ensure engineer names are accessible
     summary_df = summary_df.reset_index()
@@ -394,7 +396,7 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     set_title(slide, 'Claim Time Summary by Engineer')
     
     # Define table dimensions and positions
-    rows, cols = summary_df.shape[0] + 1, 4  # +1 for the header row and 4 columns
+    rows, cols = summary_df.shape[0] + 1, 5  # Adjust to 5 columns for new data
     left = Cm(1.0)
     top = Cm(2.4)
     width = Cm(32.2)
@@ -405,26 +407,29 @@ def create_claim_time_summary_table_slide(df, prs, output_folder):
     
     # Set column headers
     table.cell(0, 0).text = "Engineer"
-    table.cell(0, 1).text = "Total Tickets Answered"
-    table.cell(0, 2).text = "Tickets >2D"
-    table.cell(0, 3).text = "Average Response (Business Days)"
+    table.cell(0, 1).text = "Total Tickets Assigned / Unclaimed"
+    table.cell(0, 2).text = "Total Tickets Answered"
+    table.cell(0, 3).text = "Tickets >2D"
+    table.cell(0, 4).text = "Average Response (Business Days)"
     
     # Populate the table with data
     for i, row in summary_df.iterrows():
         percentage_over_2_days = (row['exceed_two_days'] / row['total_tickets']) * 100 if row['total_tickets'] > 0 else 0
         table.cell(i + 1, 0).text = str(row['AssignedTo'])  # Engineer's name
-        table.cell(i + 1, 1).text = str(row['total_tickets'])  # Total tickets
-        table.cell(i + 1, 2).text = f"{row['exceed_two_days']} ({percentage_over_2_days:.1f}%)"  # Tickets >2D
-        table.cell(i + 1, 3).text = f"{row['avg_claim_time']:.1f}"  # Average response time
+        table.cell(i + 1, 1).text = f"{row['total_tickets_assigned']} / {row['unclaimed_tickets']}"  # Total assigned / unclaimed
+        table.cell(i + 1, 2).text = str(row['total_tickets'])  # Total tickets answered
+        table.cell(i + 1, 3).text = f"{row['exceed_two_days']} ({percentage_over_2_days:.1f}%)"  # Tickets >2D
+        table.cell(i + 1, 4).text = f"{row['avg_claim_time']:.1f}"  # Average response time
     
     # Format table (set column widths)
-    column_widths = [Cm(8.0), Cm(8.0), Cm(8.1), Cm(8.1)]
+    column_widths = [Cm(8.0), Cm(6.5), Cm(4.4), Cm(6.5), Cm(6.5)]
     for col_idx, width in enumerate(column_widths):
         table.columns[col_idx].width = width
 
     return prs
 
 def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
+          
     # Get both filtered and aggregated data
     df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
 
@@ -456,12 +461,13 @@ def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='
     table.cell(0, 3).text = "Average Close Time (Business Days)"
 
     for i, row in closure_df.iterrows():
+        percentage_total = (row['tickets_closed_less_4w'] / row['total_tickets_closed']) * 100
         table.cell(i + 1, 0).text = str(row['AssignedTo'])
         table.cell(i + 1, 1).text = str(row['total_tickets_closed'])
-        table.cell(i + 1, 2).text = str(row['tickets_closed_less_4w'])
+        table.cell(i + 1, 2).text = f"{row['tickets_closed_less_4w']} ({percentage_total:.1f}%)"
         table.cell(i + 1, 3).text = f"{row['average_close_time']:.1f}"
 
-    column_widths = [Cm(8.0), Cm(8.0), Cm(8.1), Cm(8.1)]
+    column_widths = [Cm(8.0), Cm(4.4), Cm(5.2), Cm(6.6)]
     for col_idx, width in enumerate(column_widths):
         table.columns[col_idx].width = width
 
@@ -606,12 +612,12 @@ def create_resolved_items_per_month_slides(df, prs, output_folder, start_date='2
     end_date: The end of the date range to filter the data (default is '2024-12-31')
     """
     # Convert start_date and end_date to datetime
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
-    
+   
+    time_filtered_df = du.pre_filter_creation_time(df, start_date, end_date)
+
     # Filter for rows where Status is 'Resolved' and within the date range
-    resolved_df = df[(df['Status'] == 'Resolved') & 
-                     (pd.to_datetime(df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))].copy()
+    resolved_df = time_filtered_df[(time_filtered_df['Status'] == 'Resolved') & 
+                     (pd.to_datetime(time_filtered_df['Completed Time'], errors='coerce', dayfirst=True).between(start_date, end_date))].copy()
 
     # Ensure 'Completed Time' is treated as a datetime object
     resolved_df['Completed Time'] = pd.to_datetime(resolved_df['Completed Time'], errors='coerce', dayfirst=True)

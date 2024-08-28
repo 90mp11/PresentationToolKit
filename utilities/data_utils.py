@@ -255,7 +255,7 @@ def calculate_time_to_resolve(df):
 def calculate_claim_time(df):
     """
     Calculate the time taken to claim each ticket in business days and total days.
-    Returns a dataframe with additional columns for these calculations.
+    Returns a dataframe with additional columns for these calculations, including unclaimed tickets.
     """
     df = df.copy()
     
@@ -263,26 +263,62 @@ def calculate_claim_time(df):
     df['Claimed Date'] = pd.to_datetime(df['Claimed Date'], errors='coerce', dayfirst=True)
     df['Creation Time'] = pd.to_datetime(df['OriginalCreationDate'], errors='coerce', dayfirst=True)
     
-    # Drop rows with NaT in either 'Claimed Date' or 'Creation Time'
-    df = df.dropna(subset=['Claimed Date', 'Creation Time'])
-   
-    # Calculate time to claim in business days using a helper function
-    df['TimeToClaim_BusinessDays'] = df.apply(lambda row: calculate_business_days_age(row['Creation Time'], row['Claimed Date']), axis=1)
+    # Keep rows where 'Creation Time' is valid, but allow NaT in 'Claimed Date'
+    df = df.dropna(subset=['Creation Time'])
+
+    # Calculate time to claim in business days, but only where 'Claimed Date' is not NaT
+    df['TimeToClaim_BusinessDays'] = df.apply(
+        lambda row: calculate_business_days_age(row['Creation Time'], row['Claimed Date']) 
+        if pd.notna(row['Claimed Date']) else None, 
+        axis=1
+    )
     
     return df
 
 def analyze_claim_times(df):
     """
     Analyze the time to claim tickets by engineer.
-    Returns a summary dataframe with average claim time, count of tickets exceeding 2 business days, and total ticket count per engineer.
+    Returns a summary dataframe with average claim time, count of tickets exceeding 2 business days,
+    total ticket count per engineer, and the number of unclaimed tickets.
     """
-    summary = df.groupby('AssignedTo').agg(
+    # Count total tickets, including unclaimed
+    total_tickets = df.groupby('AssignedTo').size()
+    
+    # Count unclaimed tickets (where 'Claimed Date' is NaT)
+    unclaimed_tickets = df[df['Claimed Date'].isna()].groupby('AssignedTo').size()
+    
+    # Analyze claim times only for the claimed tickets
+    summary = df.dropna(subset=['Claimed Date']).groupby('AssignedTo').agg(
         avg_claim_time=('TimeToClaim_BusinessDays', 'mean'),
         exceed_two_days=('TimeToClaim_BusinessDays', lambda x: (x > 2).sum()),
         total_tickets=('TimeToClaim_BusinessDays', 'count')
     ).reset_index()
     
+    # Merge in total tickets and unclaimed tickets
+    summary = summary.merge(total_tickets.rename('total_tickets_assigned'), on='AssignedTo', how='left')
+    summary = summary.merge(unclaimed_tickets.rename('unclaimed_tickets'), on='AssignedTo', how='left')
+    
+    # Fill any NaN values in unclaimed_tickets with 0
+    summary['unclaimed_tickets'] = summary['unclaimed_tickets'].fillna(0).astype(int)
+    
     return summary
+
+def pre_filter_creation_time(df, start_date='2024-01-01', end_date='2024-12-31'):
+    """
+    Filters the DataFrame for created tickets within the specified date range
+    
+    Returns the filtered DataFrame.
+    """
+
+    # Convert start_date and end_date to datetime
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    # Filter for rows where Status is 'Resolved' and within the date range
+    mask = pd.to_datetime(df['OriginalCreationDate'], errors='coerce', dayfirst=True).between(start_date, end_date)
+    df_filtered = df[mask].copy()
+
+    return df_filtered
 
 def filter_and_aggregate_resolution_time(df, start_date='2024-01-01', end_date='2024-12-31'):
     """
@@ -307,3 +343,19 @@ def filter_and_aggregate_resolution_time(df, start_date='2024-01-01', end_date='
     df_grouped = df_filtered.groupby('AssignedTo')['TimeToResolve_BusinessDays'].mean().reset_index()
 
     return df_filtered, df_grouped
+
+def filter_dataframe_by_names(df: pd.DataFrame, selected_names: list) -> pd.DataFrame:
+    """
+    Filters the DataFrame by the selected names in the 'ClosedBy' column.
+
+    :param df: The input DataFrame to filter.
+    :param selected_names: A list of names to filter by.
+    :return: A filtered DataFrame containing only rows where 'ClosedBy' matches a name in selected_names.
+    """
+    if 'Closed by' not in df.columns:
+        raise ValueError("DataFrame must contain a 'ClosedBy' column.")
+    
+    # Filter the DataFrame
+    filtered_df = df[df['Closed by'].isin(selected_names)]
+    
+    return filtered_df

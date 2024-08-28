@@ -14,16 +14,20 @@ def resource_path(relative_path):
     
     return os.path.join(base_path, relative_path)
 
-def contact_report_presentation(contact_csv, output_folder):
+def contact_report_presentation(contact_csv, output_folder, selected_names=None, start_date='2024-01-01', end_date='2024-12-31'):
     df = du.create_blank_dataframe(contact_csv)
     prs = pu.create_blank_presentation(resource_path(const.FILE_LOCATIONS['pptx_template']))
 
+    # If selected_names is provided, filter the DataFrame
+    if selected_names:
+        df = du.filter_dataframe_by_names(df, selected_names)
+
     #pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
-    pu.create_resolved_items_per_month_slides(df, prs, output_folder)
-    pu.create_resolution_time_by_engineer_slide(df, prs, output_folder)
+    pu.create_resolved_items_per_month_slides(df, prs, output_folder, start_date, end_date)
+    pu.create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date, end_date)
     #pu.create_claim_time_summary_slide(df, prs, output_folder)
-    pu.create_claim_time_summary_table_slide(df, prs, output_folder)
-    pu.create_closure_time_summary_table_slide(df, prs, output_folder)
+    pu.create_claim_time_summary_table_slide(df, prs, output_folder, start_date, end_date)
+    pu.create_closure_time_summary_table_slide(df, prs, output_folder, start_date, end_date)
     pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
 
 def engineering_review_board_presentation(project_csv, output_folder):
