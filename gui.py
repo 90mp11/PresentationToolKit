@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkcalendar import DateEntry
+import tkcalendar as tkcal
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
 from PIL import Image, ImageTk, UnidentifiedImageError
@@ -110,7 +110,7 @@ class Application(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
 
         # Title Label
-        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Generator", font=self.title_font)
+        self.title_label = ttk.Label(self.scrollable_frame, text="Passive Engineering Report Generator - v2", font=self.title_font)
         self.title_label.grid(row=0, column=0, columnspan=3, pady=(10, 0), padx=20, sticky=tk.W)
 
         # Add the logo image
@@ -233,6 +233,8 @@ class Application(tk.Frame):
         ]
         for i, (text, mode, tooltip) in enumerate(project_options):
             var = tk.BooleanVar(value=False)
+            if text == "Engineering":
+                var = tk.BooleanVar(value=True)
             cb = ttk.Checkbutton(self.options_container, text=text, variable=var, command=self.show_impacted_areas)
             cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.option_vars[mode] = var
@@ -241,6 +243,10 @@ class Application(tk.Frame):
 
     def display_contact_options(self):
         self.clear_options()
+
+        contact_options = [
+            ("Contact Report", "contact", "Generates Contact Log report for each selected Engineer between the dates selected")
+        ]
 
         # Configure the main grid columns
         self.options_container.grid_columnconfigure(0, minsize=300)  # Adjust width for options column
@@ -269,21 +275,27 @@ class Application(tk.Frame):
         self.options_frame.grid_columnconfigure(1, weight=1)
 
         # Row 0 in nested grid: Contact Log Report checkbox
-        self.contact_log_var = tk.BooleanVar(value=True)
-        self.contact_log_checkbox = ttk.Checkbutton(self.options_frame, text="Contact Log Report", variable=self.contact_log_var)
-        self.contact_log_checkbox.grid(row=0, column=0, columnspan=2, padx=5, pady=2, sticky=tk.W)
+        for i, (text, mode, tooltip) in enumerate(contact_options):
+            var = tk.BooleanVar(value=False)
+            if text == "Contact Report":
+                var = tk.BooleanVar(value=True)
+            cb = ttk.Checkbutton(self.options_frame, text=text, variable=var)
+            cb.grid(row=i+1, column=0, padx=10, pady=5, stick=tk.W)
+            self.option_vars[mode] = var
+            self.options.append(cb)
+            ToolTip(cb, tooltip)
 
         # Row 1 in nested grid: Start Date label and DatePicker
         self.start_date_label = ttk.Label(self.options_frame, text="Start Date")
-        self.start_date_label.grid(row=1, column=0, padx=5, pady=2, sticky=tk.W)
-        self.start_date_entry = DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=1, day=1)
-        self.start_date_entry.grid(row=1, column=1, padx=5, pady=2, sticky=tk.W)
+        self.start_date_label.grid(row=3, column=0, padx=5, pady=2, sticky=tk.W)
+        self.start_date_entry = tkcal.DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=1, day=1)
+        self.start_date_entry.grid(row=3, column=1, padx=5, pady=2, sticky=tk.W)
 
         # Row 2 in nested grid: End Date label and DatePicker
         self.end_date_label = ttk.Label(self.options_frame, text="End Date")
-        self.end_date_label.grid(row=2, column=0, padx=5, pady=2, sticky=tk.W)
-        self.end_date_entry = DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=12, day=31)
-        self.end_date_entry.grid(row=2, column=1, padx=5, pady=2, sticky=tk.W)
+        self.end_date_label.grid(row=4, column=0, padx=5, pady=2, sticky=tk.W)
+        self.end_date_entry = tkcal.DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=12, day=31)
+        self.end_date_entry.grid(row=4, column=1, padx=5, pady=2, sticky=tk.W)
 
         # Row 1-2, Column 1: "Closed By" checkboxes, aligned to the top-left
         self.contact_names_frame = ttk.Frame(self.options_container, padding="5 5 5 5")
@@ -304,8 +316,11 @@ class Application(tk.Frame):
         try:
             df = pd.read_csv(self.file_path)
             unique_names = df['Closed by'].dropna().unique()
+            engineers = ["Chris Kelly", "Andy Oxford", "Luke Phillips", "Matthew Harbord", "Neil Griffin", "Gordon Pyrah", "Tom Wright"]
+
             for i, name in enumerate(sorted(unique_names)):
-                var = tk.BooleanVar(value=False)
+                # Default to True if the name is in the engineers list
+                var = tk.BooleanVar(value=name in engineers)
                 cb = ttk.Checkbutton(self.contact_names_container.scrollable_frame, text=name, variable=var)
                 cb.grid(row=i, column=0, padx=10, pady=5, sticky=tk.W)
                 self.contact_names_vars[name] = var
