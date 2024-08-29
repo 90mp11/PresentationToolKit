@@ -8,6 +8,7 @@ import sys
 import pandas as pd
 import utilities.constants as const
 import utilities.builder as bu
+import webbrowser
 
 class ToolTip:
     def __init__(self, widget, text):
@@ -119,6 +120,7 @@ class Application(tk.Frame):
         self.logo_photo = ImageTk.PhotoImage(self.logo_image)
         self.logo_label = ttk.Label(self.scrollable_frame, image=self.logo_photo)
         self.logo_label.grid(row=0, column=3, pady=(10, 0), padx=20, sticky=tk.E)
+        self.logo_label.bind("<Double-Button-1>", self.open_websites)
 
         # Upload button
         self.upload_btn = ttk.Button(self.scrollable_frame, text="Upload CSV", command=self.upload_file)
@@ -508,6 +510,16 @@ class Application(tk.Frame):
         label = tk.Label(toast, text=message, bg="black", fg="white", font=("Roboto", 10))
         label.pack(ipadx=10, ipady=5)
         toast.after(3000, toast.destroy)
+    
+    def open_websites(self, event):
+        """Open three websites on double-clicking the logo."""
+        urls = [
+            "https://cityfibreholdings.sharepoint.com/sites/PassiveEngineeringandArchitecture/Lists/Contact%20Log/report.aspx", #Contact Log
+            "https://cityfibreholdings.sharepoint.com/sites/PassiveEngineeringArchitecture/Lists/Document%20Change%20Log/9%20Report%20Output.aspx", # Doc Change Log
+            "https://cityfibreholdings.sharepoint.com/sites/PassiveEngineeringandArchitecture/Lists/Engineering%20Change%20Board/Report.aspx" #Project Board
+        ]
+        for url in urls:
+            webbrowser.open_new_tab(url)
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
