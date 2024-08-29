@@ -20,14 +20,18 @@ def contact_report_presentation(contact_csv, output_folder, selected_names=None,
 
     # If selected_names is provided, filter the DataFrame
     if selected_names:
-        df = du.filter_dataframe_by_names(df, selected_names)
+        df_resolved = du.filter_dataframe_by_names(df, selected_names, 'Closed by')
+        df_assigned = du.filter_dataframe_by_names(df, selected_names, 'AssignedTo')
+    else:
+        df_resolved = df
+        df_assigned = df
 
     #pu.create_open_and_onhold_contact_chart(df, prs, output_folder)
-    pu.create_resolved_items_per_month_slides(df, prs, output_folder, start_date, end_date)
-    pu.create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date, end_date)
+    pu.create_resolved_items_per_month_slides(df_resolved, prs, output_folder, start_date, end_date)
+    pu.create_resolution_time_by_engineer_slide(df_resolved, prs, output_folder, start_date, end_date)
     #pu.create_claim_time_summary_slide(df, prs, output_folder)
-    pu.create_claim_time_summary_table_slide(df, prs, output_folder, start_date, end_date)
-    pu.create_closure_time_summary_table_slide(df, prs, output_folder, start_date, end_date)
+    pu.create_claim_time_summary_table_slide(df_assigned, prs, output_folder, start_date, end_date)
+    pu.create_closure_time_summary_table_slide(df_resolved, prs, output_folder, start_date, end_date)
     pu.save_exit(prs, "PEA_Contact_Log_Report", "", output_folder)
 
 def engineering_review_board_presentation(project_csv, output_folder):

@@ -78,10 +78,10 @@ def plot_resolved_items_per_month(df, output_path='resolved_month_chart.png'):
     # Plot a stacked bar chart
     pivot_table.plot(kind='bar', stacked=True, figsize=(10, 7), cmap='tab20')
     
-    plt.title('Resolved Items Per Month by Engineer (2024)')
+    plt.title('Resolved Items Per Month (Closed by)')
     plt.xlabel('Month')
     plt.ylabel('Number of Resolved Items')
-    plt.legend(title='Engineer', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.legend(title='Closed By', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
@@ -99,10 +99,10 @@ def plot_grouped_resolved_items_per_month(df, output_path='grouped_resolved_mont
     # Plot a grouped bar chart
     ax = pivot_table.plot(kind='bar', stacked=False, figsize=(10, 7), cmap='tab20')
 
-    plt.title('Resolved Items Per Month by Engineer (Grouped)')
-    plt.xlabel('Month')
-    plt.ylabel('Number of Resolved Items')
-    plt.legend(title='Engineer', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.title('')
+    plt.xlabel('')
+    plt.ylabel('')
+    plt.legend(title='Closed By', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
@@ -120,9 +120,9 @@ def plot_engineer_grouped_resolved_items(df, output_path='engineer_grouped_resol
     # Plot the grouped bar chart
     ax = pivot_table.plot(kind='bar', stacked=False, figsize=(12, 8), cmap='tab20')
 
-    plt.title('Resolved Items Per Engineer by Month (Grouped)')
-    plt.xlabel('Engineer')
-    plt.ylabel('Number of Resolved Items')
+    plt.title('')
+    plt.xlabel('')
+    plt.ylabel('Number of Tickets Closed')
     plt.legend(title='Month', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
     plt.savefig(output_path, bbox_inches='tight')
@@ -136,17 +136,17 @@ def plot_resolution_time_by_engineer(df, output_path='resolution_time_chart.png'
     output_path: Path to save the generated chart image.
     """
     # Group by engineer and calculate the average resolution time
-    grouped_df = df.groupby('AssignedTo')['TimeToResolve_BusinessDays'].mean().reset_index()
+    grouped_df = df.groupby('Closed by')['TimeToResolve_BusinessDays'].mean().reset_index()
     
     # Sort the data for better visualization
     grouped_df = grouped_df.sort_values(by='TimeToResolve_BusinessDays', ascending=False)
 
     # Plot the bar chart
     plt.figure(figsize=(10, 6))
-    bars = plt.barh(grouped_df['AssignedTo'], grouped_df['TimeToResolve_BusinessDays'], color='skyblue')
+    bars = plt.barh(grouped_df['Closed by'], grouped_df['TimeToResolve_BusinessDays'], color='skyblue')
     plt.xlabel('Average Resolution Time in Business Days')
-    plt.ylabel('Engineer')
-    plt.title('Average Ticket Resolution Time by Engineer')
+    plt.ylabel('')
+    plt.title('')
     plt.gca().invert_yaxis()  # Invert the y-axis to have the longest bar on top
     
     # Add labels on each bar

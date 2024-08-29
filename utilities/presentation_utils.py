@@ -246,7 +246,7 @@ def create_body_slide_four_cols(df, prs, type_flag='ProjectOwner', title_text=""
 
         # Add project details to the rectangle (based on "type_flag" for specific contents)
         if type_flag == 'ProjectOwner':
-            contents_text = f"{project['Title']}\n"
+            contents_text = f"ID: {project['ID']} - {project['Title']}\n"
             contents_text += f"Objective: {project['Objective']}\n"
             contents_text += f"Staging: {const.get_staging_text(project['Staging'])}\n"
             contents_text += f"Priority: {const.get_priority_text(project['Priority'])}"
@@ -406,7 +406,7 @@ def create_claim_time_summary_table_slide(df, prs, output_folder, start_date='20
     table = slide.shapes.add_table(rows, cols, left, top, width, height).table
     
     # Set column headers
-    table.cell(0, 0).text = "Engineer"
+    table.cell(0, 0).text = "Assigned To"
     table.cell(0, 1).text = "Total Tickets Assigned / Unclaimed"
     table.cell(0, 2).text = "Total Tickets Answered"
     table.cell(0, 3).text = "Tickets >2D"
@@ -431,11 +431,11 @@ def create_claim_time_summary_table_slide(df, prs, output_folder, start_date='20
 def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='2024-01-01', end_date='2024-12-31'):
           
     # Get both filtered and aggregated data
-    df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
+    df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date, field='Closed by')
 
     # Now we need to aggregate further to get the closure summary, but use the individual counts and times
-    closure_df = df_filtered.groupby('AssignedTo').agg(
-        total_tickets_closed=('AssignedTo', 'count'),
+    closure_df = df_filtered.groupby('Closed by').agg(
+        total_tickets_closed=('Closed by', 'count'),
         tickets_closed_less_4w=('TimeToResolve_BusinessDays', lambda x: sum(x < 20)),  # Assuming 4 weeks as 20 business days
         average_close_time=('TimeToResolve_BusinessDays', 'mean')
     ).reset_index()
@@ -455,14 +455,14 @@ def create_closure_time_summary_table_slide(df, prs, output_folder, start_date='
 
     table = slide.shapes.add_table(rows, cols, left, top, width, height).table
 
-    table.cell(0, 0).text = "Engineer"
+    table.cell(0, 0).text = "Closed By"
     table.cell(0, 1).text = "Total Tickets Closed"
     table.cell(0, 2).text = "Tickets Closed <4W"
     table.cell(0, 3).text = "Average Close Time (Business Days)"
 
     for i, row in closure_df.iterrows():
         percentage_total = (row['tickets_closed_less_4w'] / row['total_tickets_closed']) * 100
-        table.cell(i + 1, 0).text = str(row['AssignedTo'])
+        table.cell(i + 1, 0).text = str(row['Closed by'])
         table.cell(i + 1, 1).text = str(row['total_tickets_closed'])
         table.cell(i + 1, 2).text = f"{row['tickets_closed_less_4w']} ({percentage_total:.1f}%)"
         table.cell(i + 1, 3).text = f"{row['average_close_time']:.1f}"
@@ -481,7 +481,7 @@ def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date=
     prs: The PowerPoint presentation object.
     """
     # Process the DataFrame to filter and aggregate resolution times by engineer
-    df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date)
+    df_filtered, df_grouped = du.filter_and_aggregate_resolution_time(df, start_date, end_date, field='Closed by')
 
     # Plot the chart and save it as an image
     chart_image_path = os.path.join(output_folder, 'resolution_time_chart.png')
@@ -489,7 +489,7 @@ def create_resolution_time_by_engineer_slide(df, prs, output_folder, start_date=
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    set_title(slide, 'Average Resolution Time by Engineer')
+    set_title(slide, 'Average Resolution Time')
     insert_chart_into_slide(prs, slide, chart_image_path)
 
     return prs
@@ -550,7 +550,7 @@ def create_grouped_resolved_items_per_month_chart_slide(df, prs, output_folder):
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    set_title(slide, 'Resolved Items Per Month By Engineer (Grouped)')
+    set_title(slide, 'Resolved Items Per Month (Grouped)')
     insert_chart_into_slide(prs, slide, chart_image_path)
    
     return prs
@@ -568,7 +568,7 @@ def create_engineer_grouped_resolved_items_chart_slide(df, prs, output_folder):
 
     # Add a new slide for the chart
     slide = prs.slides.add_slide(prs.slide_masters[1].slide_layouts[5])  # Choose an appropriate layout
-    set_title(slide, 'Resolved Items Per Engineer by Month (Grouped)')
+    set_title(slide, 'Resolved Items per Month (Grouped)')
     insert_chart_into_slide(prs, slide, chart_image_path)
    
     return prs

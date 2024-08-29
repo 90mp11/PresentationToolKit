@@ -320,7 +320,7 @@ def pre_filter_creation_time(df, start_date='2024-01-01', end_date='2024-12-31')
 
     return df_filtered
 
-def filter_and_aggregate_resolution_time(df, start_date='2024-01-01', end_date='2024-12-31'):
+def filter_and_aggregate_resolution_time(df, start_date='2024-01-01', end_date='2024-12-31', field='AssignedTo'):
     """
     Filters the DataFrame for resolved tickets within the specified date range and
     calculates the average resolution time by engineer.
@@ -340,11 +340,11 @@ def filter_and_aggregate_resolution_time(df, start_date='2024-01-01', end_date='
     df_filtered = df[mask].copy()
 
     # Group by engineer and calculate the average resolution time in business days
-    df_grouped = df_filtered.groupby('AssignedTo')['TimeToResolve_BusinessDays'].mean().reset_index()
+    df_grouped = df_filtered.groupby(field)['TimeToResolve_BusinessDays'].mean().reset_index()
 
     return df_filtered, df_grouped
 
-def filter_dataframe_by_names(df: pd.DataFrame, selected_names: list) -> pd.DataFrame:
+def filter_dataframe_by_names(df: pd.DataFrame, selected_names: list, field = 'Closed by') -> pd.DataFrame:
     """
     Filters the DataFrame by the selected names in the 'ClosedBy' column.
 
@@ -356,6 +356,6 @@ def filter_dataframe_by_names(df: pd.DataFrame, selected_names: list) -> pd.Data
         raise ValueError("DataFrame must contain a 'ClosedBy' column.")
     
     # Filter the DataFrame
-    filtered_df = df[df['Closed by'].isin(selected_names)]
+    filtered_df = df[df[field].isin(selected_names)]
     
     return filtered_df

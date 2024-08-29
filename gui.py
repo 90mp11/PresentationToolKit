@@ -62,7 +62,7 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.master.title("Passive Engineering Report Generator - v2")
-        self.master.geometry('800x750')
+        self.master.geometry('800x770')
         self.output_folder = os.path.join(os.path.expanduser("~"), "Downloads")
         self.create_widgets()
 
@@ -280,7 +280,7 @@ class Application(tk.Frame):
             if text == "Contact Report":
                 var = tk.BooleanVar(value=True)
             cb = ttk.Checkbutton(self.options_frame, text=text, variable=var)
-            cb.grid(row=i+1, column=0, padx=10, pady=5, stick=tk.W)
+            cb.grid(row=i+1, column=0, padx=10, pady=5, sticky=tk.W)
             self.option_vars[mode] = var
             self.options.append(cb)
             ToolTip(cb, tooltip)
@@ -288,13 +288,15 @@ class Application(tk.Frame):
         # Row 1 in nested grid: Start Date label and DatePicker
         self.start_date_label = ttk.Label(self.options_frame, text="Start Date")
         self.start_date_label.grid(row=3, column=0, padx=5, pady=2, sticky=tk.W)
-        self.start_date_entry = tkcal.DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=1, day=1)
+        self.start_date_entry = tkcal.DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, 
+                                                year=2024, month=1, day=1, date_pattern='dd/MM/yyyy')
         self.start_date_entry.grid(row=3, column=1, padx=5, pady=2, sticky=tk.W)
 
         # Row 2 in nested grid: End Date label and DatePicker
         self.end_date_label = ttk.Label(self.options_frame, text="End Date")
         self.end_date_label.grid(row=4, column=0, padx=5, pady=2, sticky=tk.W)
-        self.end_date_entry = tkcal.DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, year=2024, month=12, day=31)
+        self.end_date_entry = tkcal.DateEntry(self.options_frame, width=12, background='darkblue', foreground='white', borderwidth=2, 
+                                            year=2024, month=12, day=31, date_pattern='dd/MM/yyyy')
         self.end_date_entry.grid(row=4, column=1, padx=5, pady=2, sticky=tk.W)
 
         # Row 1-2, Column 1: "Closed By" checkboxes, aligned to the top-left
