@@ -39,7 +39,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='PRC_v2',
+    name='PRG_v2',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
